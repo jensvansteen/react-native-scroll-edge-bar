@@ -1,0 +1,17 @@
+{
+  "cxxNamespace": ["scrolledgebar"],
+  "ios": {
+    "iosModuleName": "ScrollEdgeBar"
+  },
+  "android": {
+    "androidNamespace": ["scrolledgebar"],
+    "androidCxxLibName": "scrolledgebar"
+  },
+  "autolinking": {
+    "ScrollEdgeBar": {
+      "swift": "HybridScrollEdgeBar",
+      "kotlin": "HybridScrollEdgeBar"
+    }
+  },
+  "ignorePaths": ["node_modules"]
+}
