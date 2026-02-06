@@ -1,19 +1,63 @@
-import { View, Text, StyleSheet, ScrollView } from 'react-native';
+import React from 'react';
+import { View, Text, StyleSheet, ScrollView, Switch } from 'react-native';
 import SegmentedControl from '@react-native-segmented-control/segmented-control';
 import { ScrollEdgeBar } from 'react-native-scroll-edge-bar';
+import { NavigationContainer } from '@react-navigation/native';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { BottomTabBarHeightContext } from '@react-navigation/bottom-tabs';
+import { createNativeBottomTabNavigator } from '@react-navigation/bottom-tabs/unstable';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { enableScreens } from 'react-native-screens';
+import { useHeaderHeight } from '@react-navigation/elements';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-export default function App() {
+enableScreens();
+
+const Stack = createNativeStackNavigator();
+const Tabs = createNativeBottomTabNavigator();
+
+function ExampleScreen() {
+  const headerHeight = useHeaderHeight();
+  const tabBarHeight = React.useContext(BottomTabBarHeightContext) ?? 0;
+  const insets = useSafeAreaInsets();
+  const topOffset = Math.max(0, headerHeight - insets.top);
+  const bottomOffset = Math.max(0, tabBarHeight - insets.bottom);
+
+  React.useEffect(() => {
+    console.log(
+      '[ScrollEdgeBar][JS]',
+      JSON.stringify({
+        headerHeight,
+        tabBarHeight,
+        insetsTop: insets.top,
+        insetsBottom: insets.bottom,
+        topOffset,
+        bottomOffset,
+      })
+    );
+  }, [
+    headerHeight,
+    tabBarHeight,
+    insets.bottom,
+    insets.top,
+    topOffset,
+    bottomOffset,
+  ]);
+
   return (
     <View style={styles.container}>
-      <ScrollEdgeBar style={styles.scrollEdgeBar}>
-        <ScrollEdgeBar.TopBar>
-          <View style={styles.topBar}>
-            <SegmentedControl
-              values={['Free', 'Paid']}
-              selectedIndex={0}
-              style={styles.segmented}
-            />
-          </View>
+      <ScrollEdgeBar
+        style={styles.scrollEdgeBar}
+        topBarOffset={topOffset}
+        bottomBarOffset={bottomOffset}
+      >
+        <ScrollEdgeBar.TopBar style={styles.topBar}>
+          <SegmentedControl
+            values={['Free', 'Paid']}
+            selectedIndex={0}
+            style={styles.segmented}
+          />
         </ScrollEdgeBar.TopBar>
 
         <ScrollView>
@@ -24,9 +68,10 @@ export default function App() {
           ))}
         </ScrollView>
 
-        <ScrollEdgeBar.BottomBar>
-          <View style={styles.bottomBar}>
+        <ScrollEdgeBar.BottomBar style={styles.bottomBar}>
+          <View style={styles.bottomBarRow}>
             <Text style={styles.bottomBarText}>Bottom Bar</Text>
+            <Switch />
           </View>
         </ScrollEdgeBar.BottomBar>
       </ScrollEdgeBar>
@@ -34,7 +79,51 @@ export default function App() {
   );
 }
 
+function TabsScreen() {
+  return (
+    <Tabs.Navigator
+      screenOptions={{
+        headerShown: false,
+        tabBarStyle: {
+          backgroundColor: 'transparent',
+        },
+      }}
+    >
+      <Tabs.Screen
+        name="Example"
+        component={ExampleScreen}
+        options={{ title: 'Example' }}
+      />
+    </Tabs.Navigator>
+  );
+}
+
+export default function App() {
+  return (
+    <GestureHandlerRootView style={styles.root}>
+      <SafeAreaProvider>
+        <NavigationContainer>
+          <Stack.Navigator>
+            <Stack.Screen
+              name="Home"
+              component={TabsScreen}
+              options={{
+                title: 'Scroll Edge',
+                headerTransparent: true,
+                headerShadowVisible: false,
+              }}
+            />
+          </Stack.Navigator>
+        </NavigationContainer>
+      </SafeAreaProvider>
+    </GestureHandlerRootView>
+  );
+}
+
 const styles = StyleSheet.create({
+  root: {
+    flex: 1,
+  },
   container: {
     flex: 1,
   },
@@ -42,17 +131,22 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   topBar: {
-    padding: 16,
-    paddingTop: 60,
-    backgroundColor: 'red',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    backgroundColor: 'transparent',
   },
   segmented: {
     height: 32,
   },
   bottomBar: {
-    padding: 16,
-    paddingBottom: 34,
-    backgroundColor: 'rgba(255, 255, 255, 0.8)',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    backgroundColor: 'transparent',
+  },
+  bottomBarRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
   },
   bottomBarText: {
     fontSize: 16,

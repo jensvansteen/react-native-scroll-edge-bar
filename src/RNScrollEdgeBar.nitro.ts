@@ -1,5 +1,3 @@
-import type { ReactNode } from 'react';
-import type { StyleProp, ViewStyle } from 'react-native';
 import type {
   HybridView,
   HybridViewMethods,
@@ -12,10 +10,10 @@ export interface RNScrollEdgeBarProps extends HybridViewProps {
   estimatedTopBarHeight?: number;
   /** Estimated bottom bar height (used before layout to prevent flicker) */
   estimatedBottomBarHeight?: number;
-  /** React children rendered inside the host view */
-  children?: ReactNode;
-  /** Style for the host view */
-  style?: StyleProp<ViewStyle>;
+  /** Extra offset to push the top bar below a transparent header */
+  topBarOffset?: number;
+  /** Extra offset to lift the bottom bar above a tab bar */
+  bottomBarOffset?: number;
 }
 export interface RNScrollEdgeBarMethods extends HybridViewMethods {}
 
