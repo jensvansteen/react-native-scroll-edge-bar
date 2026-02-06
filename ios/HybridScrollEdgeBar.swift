@@ -76,7 +76,6 @@ class ScrollEdgeBarContainerView: UIView {
     private var detectedBottomBarView: UIView?
     private var detectedScrollView: UIScrollView?
     private var didAttachControllerView = false
-    private var attachAttempts = 0
     private var didNotifyOffsets: Bool = false
 
     override func point(inside point: CGPoint, with event: UIEvent?) -> Bool {
@@ -94,6 +93,15 @@ class ScrollEdgeBarContainerView: UIView {
             detectedTopBarView = nil
         } else if subview === detectedBottomBarView {
             detectedBottomBarView = nil
+        }
+    }
+
+    override func willMove(toWindow newWindow: UIWindow?) {
+        super.willMove(toWindow: newWindow)
+        // Before the view is removed from the window, restore all reparented
+        // Fabric views so Fabric's unmount code finds them in the expected parent.
+        if newWindow == nil && window != nil {
+            cleanupController()
         }
     }
 
@@ -168,11 +176,6 @@ class ScrollEdgeBarContainerView: UIView {
             detectedScrollView = findScrollView(in: view)
         } else {
             detectedScrollView = nil
-        }
-        if attachAttempts < 5 {
-            let viewName = view.map { String(describing: type(of: $0)) } ?? "nil"
-            let scrollName = detectedScrollView.map { String(describing: type(of: $0)) } ?? "nil"
-            print("[ScrollEdgeBar] setScrollView view=\(viewName) detected=\(scrollName)")
         }
         trySetup()
     }
@@ -261,21 +264,12 @@ class ScrollEdgeBarContainerView: UIView {
         }
 
         visit(root)
-        if let best = best, attachAttempts < 5 {
-            let className = String(describing: type(of: best))
-            print("[ScrollEdgeBar] fallback picked scrollView=\(className) area=\(bestArea)")
-        }
         return best
     }
 
     private func trySetup() {
         guard !isSetup,
               let parent = parentViewController else { return }
-
-        if attachAttempts < 5 {
-            print("[ScrollEdgeBar] trySetup called, didAttach=\(didAttachControllerView), hasScroll=\(detectedScrollView != nil)")
-        }
-        attachAttempts += 1
 
         if detectedScrollView == nil {
             if let candidate = findBestScrollView(in: parent.view) {
@@ -321,6 +315,22 @@ class ScrollEdgeBarContainerView: UIView {
         }
     }
 
+    /// Called from the generated ObjC++ unmount code to tear down the SwiftUI
+    /// hosting controller and restore reparented views before Fabric's assertions.
+    @objc func prepareForFabricUnmount() {
+        cleanupController()
+    }
+
+    private func cleanupController() {
+        if #available(iOS 26.0, *),
+           let controller = edgeBarController as? ScrollEdgeBarController {
+            controller.cleanup()
+        }
+        edgeBarController = nil
+        isSetup = false
+        didAttachControllerView = false
+    }
+
     private func offsetsDidChange() {
         guard #available(iOS 26.0, *),
               let controller = edgeBarController as? ScrollEdgeBarController else { return }
@@ -352,6 +362,14 @@ final class ScrollEdgeBarController: UIViewController {
     private var hostingController: UIHostingController<ScrollEdgeBarWrapperView>?
     private var didSetup = false
 
+    // Track original Fabric parents + subview indices for teardown restore
+    private weak var scrollViewOriginalParent: UIView?
+    private var scrollViewOriginalIndex: Int = 0
+    private weak var topBarOriginalParent: UIView?
+    private var topBarOriginalIndex: Int = 0
+    private weak var bottomBarOriginalParent: UIView?
+    private var bottomBarOriginalIndex: Int = 0
+
     init(scrollView: UIScrollView) {
         self.scrollView = scrollView
         super.init(nibName: nil, bundle: nil)
@@ -366,11 +384,19 @@ final class ScrollEdgeBarController: UIViewController {
     }
 
     func setTopBar(_ view: UIView) {
+        if topBarOriginalParent == nil, let parent = view.superview {
+            topBarOriginalParent = parent
+            topBarOriginalIndex = parent.subviews.firstIndex(of: view) ?? 0
+        }
         topBarView = view
         updateHostingControllerIfNeeded()
     }
 
     func setBottomBar(_ view: UIView) {
+        if bottomBarOriginalParent == nil, let parent = view.superview {
+            bottomBarOriginalParent = parent
+            bottomBarOriginalIndex = parent.subviews.firstIndex(of: view) ?? 0
+        }
         bottomBarView = view
         updateHostingControllerIfNeeded()
     }
@@ -390,19 +416,9 @@ final class ScrollEdgeBarController: UIViewController {
 
     /// Detect a native tab bar and adjust the safe area so
     /// `safeAreaBar(edge: .bottom)` positions above it automatically.
-    private var didLogTabBarSearch = false
     private func updateSafeAreaForTabBar() {
         // 1. Try UITabBarController in the VC hierarchy
         var vc: UIViewController? = parent
-        if !didLogTabBarSearch {
-            var chain: [String] = []
-            var walker: UIViewController? = parent
-            while let current = walker {
-                chain.append(String(describing: type(of: current)))
-                walker = current.parent
-            }
-            print("[ScrollEdgeBar] VC chain: \(chain.joined(separator: " → "))")
-        }
         while let current = vc {
             if let tabBarController = current as? UITabBarController,
                !tabBarController.tabBar.isHidden,
@@ -410,10 +426,6 @@ final class ScrollEdgeBarController: UIViewController {
                 let tabBarHeight = tabBarController.tabBar.bounds.height
                 let windowBottom = view.window?.safeAreaInsets.bottom ?? 0
                 let extra = max(0, tabBarHeight - windowBottom)
-                if !didLogTabBarSearch {
-                    didLogTabBarSearch = true
-                    print("[ScrollEdgeBar] Found UITabBarController, tabBar height=\(tabBarHeight), windowBottom=\(windowBottom), extra=\(extra)")
-                }
                 if additionalSafeAreaInsets.bottom != extra {
                     additionalSafeAreaInsets.bottom = extra
                 }
@@ -427,20 +439,12 @@ final class ScrollEdgeBarController: UIViewController {
             let tabBarHeight = tabBar.bounds.height
             let windowBottom = window.safeAreaInsets.bottom
             let extra = max(0, tabBarHeight - windowBottom)
-            if !didLogTabBarSearch {
-                didLogTabBarSearch = true
-                print("[ScrollEdgeBar] Found UITabBar via view search, height=\(tabBarHeight), windowBottom=\(windowBottom), extra=\(extra)")
-            }
             if additionalSafeAreaInsets.bottom != extra {
                 additionalSafeAreaInsets.bottom = extra
             }
             return
         }
 
-        if !didLogTabBarSearch {
-            didLogTabBarSearch = true
-            print("[ScrollEdgeBar] No tab bar found")
-        }
         if additionalSafeAreaInsets.bottom != 0 {
             additionalSafeAreaInsets.bottom = 0
         }
@@ -462,12 +466,14 @@ final class ScrollEdgeBarController: UIViewController {
     }
 
     private func setupHostingController() {
+        if let parent = scrollView.superview {
+            scrollViewOriginalParent = parent
+            scrollViewOriginalIndex = parent.subviews.firstIndex(of: scrollView) ?? 0
+        }
         scrollView.removeFromSuperview()
 
         let topContent = makeBarContent(topBarView, estimatedHeight: estimatedTopBarHeight)
         let bottomContent = makeBarContent(bottomBarView, estimatedHeight: estimatedBottomBarHeight)
-        print("[ScrollEdgeBar] setupHosting: topBarView=\(topBarView != nil), bottomBarView=\(bottomBarView != nil), topContent=\(topContent != nil), bottomContent=\(bottomContent != nil)")
-
         let wrapperView = ScrollEdgeBarWrapperView(
             scrollView: scrollView,
             topBarContent: topContent,
@@ -514,6 +520,45 @@ final class ScrollEdgeBarController: UIViewController {
         bottomBarOffset = bottom
         updateHostingControllerIfNeeded()
     }
+
+    /// Restore all reparented views to their original Fabric parents so
+    /// Fabric's unmount logic finds them in the expected location.
+    func cleanup() {
+        // Tear down hosting controller first
+        hostingController?.willMove(toParent: nil)
+        hostingController?.view.removeFromSuperview()
+        hostingController?.removeFromParent()
+        hostingController = nil
+        didSetup = false
+
+        // Restore scroll view at its original index
+        scrollView.removeFromSuperview()
+        scrollView.isScrollEnabled = true
+        scrollView.contentInsetAdjustmentBehavior = .automatic
+        scrollView.showsVerticalScrollIndicator = true
+        scrollView.showsHorizontalScrollIndicator = true
+        if let parent = scrollViewOriginalParent {
+            let idx = min(scrollViewOriginalIndex, parent.subviews.count)
+            parent.insertSubview(scrollView, at: idx)
+        }
+
+        // Restore bar views at their original indices
+        if let topBar = topBarView, let parent = topBarOriginalParent {
+            topBar.removeFromSuperview()
+            let idx = min(topBarOriginalIndex, parent.subviews.count)
+            parent.insertSubview(topBar, at: idx)
+        }
+        if let bottomBar = bottomBarView, let parent = bottomBarOriginalParent {
+            bottomBar.removeFromSuperview()
+            let idx = min(bottomBarOriginalIndex, parent.subviews.count)
+            parent.insertSubview(bottomBar, at: idx)
+        }
+
+        // Remove self from parent VC
+        willMove(toParent: nil)
+        view.removeFromSuperview()
+        removeFromParent()
+    }
 }
 
 
@@ -553,7 +598,6 @@ struct BarViewWrapper: UIViewRepresentable {
 
     func makeUIView(context: Context) -> UIView {
         let container = UIView()
-        print("[ScrollEdgeBar] BarViewWrapper.makeUIView called for \(type(of: barView)), subviews=\(barView.subviews.count), frame=\(barView.frame)")
         barView.removeFromSuperview()
         barView.isHidden = false
         if barView is ScrollEdgeBarTopBarView || barView is ScrollEdgeBarBottomBarView {

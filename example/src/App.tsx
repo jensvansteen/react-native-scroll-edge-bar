@@ -54,7 +54,7 @@ function ExampleScreen() {
       >
         <ScrollEdgeBar.TopBar style={styles.topBar}>
           <SegmentedControl
-            values={['Free', 'Paid']}
+            values={['Free', 'Paid', 'Freemium']}
             selectedIndex={0}
             style={styles.segmented}
           />
@@ -62,8 +62,16 @@ function ExampleScreen() {
 
         <ScrollView>
           {Array.from({ length: 50 }).map((_, i) => (
-            <View key={i} style={styles.item}>
-              <Text>Item {i + 1}</Text>
+            <View
+              key={i}
+              style={[
+                styles.item,
+                { backgroundColor: i % 2 === 0 ? '#fff' : '#000' },
+              ]}
+            >
+              <Text style={{ color: i % 2 === 0 ? '#000' : '#fff' }}>
+                Item {i + 1}
+              </Text>
             </View>
           ))}
         </ScrollView>
@@ -152,8 +160,8 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   item: {
-    padding: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: '#eee',
+    height: 250,
+    justifyContent: 'center',
+    paddingHorizontal: 20,
   },
 });
