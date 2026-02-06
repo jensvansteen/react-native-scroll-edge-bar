@@ -382,9 +382,78 @@ final class ScrollEdgeBarController: UIViewController {
 
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
+        updateSafeAreaForTabBar()
         guard !didSetup else { return }
         didSetup = true
         setupHostingController()
+    }
+
+    /// Detect a native tab bar and adjust the safe area so
+    /// `safeAreaBar(edge: .bottom)` positions above it automatically.
+    private var didLogTabBarSearch = false
+    private func updateSafeAreaForTabBar() {
+        // 1. Try UITabBarController in the VC hierarchy
+        var vc: UIViewController? = parent
+        if !didLogTabBarSearch {
+            var chain: [String] = []
+            var walker: UIViewController? = parent
+            while let current = walker {
+                chain.append(String(describing: type(of: current)))
+                walker = current.parent
+            }
+            print("[ScrollEdgeBar] VC chain: \(chain.joined(separator: " → "))")
+        }
+        while let current = vc {
+            if let tabBarController = current as? UITabBarController,
+               !tabBarController.tabBar.isHidden,
+               tabBarController.tabBar.alpha > 0 {
+                let tabBarHeight = tabBarController.tabBar.bounds.height
+                let windowBottom = view.window?.safeAreaInsets.bottom ?? 0
+                let extra = max(0, tabBarHeight - windowBottom)
+                if !didLogTabBarSearch {
+                    didLogTabBarSearch = true
+                    print("[ScrollEdgeBar] Found UITabBarController, tabBar height=\(tabBarHeight), windowBottom=\(windowBottom), extra=\(extra)")
+                }
+                if additionalSafeAreaInsets.bottom != extra {
+                    additionalSafeAreaInsets.bottom = extra
+                }
+                return
+            }
+            vc = current.parent
+        }
+
+        // 2. Fallback: search for UITabBar in the window's view hierarchy
+        if let window = view.window, let tabBar = findTabBar(in: window) {
+            let tabBarHeight = tabBar.bounds.height
+            let windowBottom = window.safeAreaInsets.bottom
+            let extra = max(0, tabBarHeight - windowBottom)
+            if !didLogTabBarSearch {
+                didLogTabBarSearch = true
+                print("[ScrollEdgeBar] Found UITabBar via view search, height=\(tabBarHeight), windowBottom=\(windowBottom), extra=\(extra)")
+            }
+            if additionalSafeAreaInsets.bottom != extra {
+                additionalSafeAreaInsets.bottom = extra
+            }
+            return
+        }
+
+        if !didLogTabBarSearch {
+            didLogTabBarSearch = true
+            print("[ScrollEdgeBar] No tab bar found")
+        }
+        if additionalSafeAreaInsets.bottom != 0 {
+            additionalSafeAreaInsets.bottom = 0
+        }
+    }
+
+    private func findTabBar(in view: UIView) -> UITabBar? {
+        if let tabBar = view as? UITabBar, !tabBar.isHidden, tabBar.alpha > 0 {
+            return tabBar
+        }
+        for subview in view.subviews {
+            if let found = findTabBar(in: subview) { return found }
+        }
+        return nil
     }
 
     private func makeBarContent(_ uiView: UIView?, estimatedHeight: CGFloat) -> AnyView? {
@@ -402,7 +471,9 @@ final class ScrollEdgeBarController: UIViewController {
         let wrapperView = ScrollEdgeBarWrapperView(
             scrollView: scrollView,
             topBarContent: topContent,
-            bottomBarContent: bottomContent
+            bottomBarContent: bottomContent,
+            topBarOffset: topBarOffset,
+            bottomBarOffset: bottomBarOffset
         )
 
         let hosting = UIHostingController(rootView: wrapperView)
@@ -431,7 +502,9 @@ final class ScrollEdgeBarController: UIViewController {
         let wrapperView = ScrollEdgeBarWrapperView(
             scrollView: scrollView,
             topBarContent: makeBarContent(topBarView, estimatedHeight: estimatedTopBarHeight),
-            bottomBarContent: makeBarContent(bottomBarView, estimatedHeight: estimatedBottomBarHeight)
+            bottomBarContent: makeBarContent(bottomBarView, estimatedHeight: estimatedBottomBarHeight),
+            topBarOffset: topBarOffset,
+            bottomBarOffset: bottomBarOffset
         )
         hostingController?.rootView = wrapperView
     }
@@ -439,6 +512,7 @@ final class ScrollEdgeBarController: UIViewController {
     func setOffsets(top: CGFloat, bottom: CGFloat) {
         topBarOffset = top
         bottomBarOffset = bottom
+        updateHostingControllerIfNeeded()
     }
 }
 
@@ -532,6 +606,8 @@ struct ScrollEdgeBarWrapperView: View {
     let scrollView: UIScrollView
     let topBarContent: AnyView?
     let bottomBarContent: AnyView?
+    let topBarOffset: CGFloat
+    let bottomBarOffset: CGFloat
     @State private var contentHeight: CGFloat = 5000
 
     var body: some View {
