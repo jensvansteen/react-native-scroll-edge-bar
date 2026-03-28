@@ -1,16 +1,20 @@
 import React from 'react';
-import { View, Text, StyleSheet, ScrollView, Switch } from 'react-native';
+import {
+  DynamicColorIOS,
+  ScrollView,
+  StyleSheet,
+  Switch,
+  Text,
+  View,
+} from 'react-native';
 import SegmentedControl from '@react-native-segmented-control/segmented-control';
-import { ScrollEdgeBar } from 'react-native-scroll-edge-bar';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { BottomTabBarHeightContext } from '@react-navigation/bottom-tabs';
 import { createNativeBottomTabNavigator } from '@react-navigation/bottom-tabs/unstable';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { enableScreens } from 'react-native-screens';
-import { useHeaderHeight } from '@react-navigation/elements';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { ScrollEdgeBar } from 'react-native-scroll-edge-bar';
 
 enableScreens();
 
@@ -18,72 +22,35 @@ const Stack = createNativeStackNavigator();
 const Tabs = createNativeBottomTabNavigator();
 
 function ExampleScreen() {
-  const headerHeight = useHeaderHeight();
-  const tabBarHeight = React.useContext(BottomTabBarHeightContext) ?? 0;
-  const insets = useSafeAreaInsets();
-  const topOffset = Math.max(0, headerHeight - insets.top);
-  const bottomOffset = Math.max(0, tabBarHeight - insets.bottom);
-
-  React.useEffect(() => {
-    console.log(
-      '[ScrollEdgeBar][JS]',
-      JSON.stringify({
-        headerHeight,
-        tabBarHeight,
-        insetsTop: insets.top,
-        insetsBottom: insets.bottom,
-        topOffset,
-        bottomOffset,
-      })
-    );
-  }, [
-    headerHeight,
-    tabBarHeight,
-    insets.bottom,
-    insets.top,
-    topOffset,
-    bottomOffset,
-  ]);
-
   return (
-    <View style={styles.container}>
-      <ScrollEdgeBar
-        style={styles.scrollEdgeBar}
-        topBarOffset={topOffset}
-        bottomBarOffset={bottomOffset}
-      >
-        <ScrollEdgeBar.TopBar style={styles.topBar}>
-          <SegmentedControl
-            values={['Free', 'Paid', 'Freemium']}
-            selectedIndex={0}
-            style={styles.segmented}
-          />
-        </ScrollEdgeBar.TopBar>
+    <ScrollEdgeBar
+      style={styles.scrollEdgeBar}
+      estimatedTopBarHeight={48}
+      estimatedBottomBarHeight={56}
+    >
+      <ScrollEdgeBar.TopBar style={styles.topBar}>
+        <SegmentedControl
+          values={['Free', 'Paid', 'Freemium']}
+          selectedIndex={0}
+          style={styles.segmented}
+        />
+      </ScrollEdgeBar.TopBar>
 
-        <ScrollView>
-          {Array.from({ length: 50 }).map((_, i) => (
-            <View
-              key={i}
-              style={[
-                styles.item,
-                { backgroundColor: i % 2 === 0 ? '#fff' : '#000' },
-              ]}
-            >
-              <Text style={{ color: i % 2 === 0 ? '#000' : '#fff' }}>
-                Item {i + 1}
-              </Text>
-            </View>
-          ))}
-        </ScrollView>
-
-        <ScrollEdgeBar.BottomBar style={styles.bottomBar}>
-          <View style={styles.bottomBarRow}>
-            <Text style={styles.bottomBarText}>Bottom Bar</Text>
-            <Switch />
+      <ScrollView contentInsetAdjustmentBehavior="automatic">
+        {Array.from({ length: 50 }).map((_, i) => (
+          <View key={i} style={styles.item}>
+            <Text style={styles.itemText}>Item {i + 1}</Text>
           </View>
-        </ScrollEdgeBar.BottomBar>
-      </ScrollEdgeBar>
-    </View>
+        ))}
+      </ScrollView>
+
+      <ScrollEdgeBar.BottomBar style={styles.bottomBar}>
+        <View style={styles.bottomBarRow}>
+          <Text style={styles.bottomBarText}>Bottom Bar</Text>
+          <Switch />
+        </View>
+      </ScrollEdgeBar.BottomBar>
+    </ScrollEdgeBar>
   );
 }
 
@@ -92,6 +59,7 @@ function TabsScreen() {
     <Tabs.Navigator
       screenOptions={{
         headerShown: false,
+        headerTransparent: true,
         tabBarStyle: {
           backgroundColor: 'transparent',
         },
@@ -119,6 +87,10 @@ export default function App() {
                 title: 'Scroll Edge',
                 headerTransparent: true,
                 headerShadowVisible: false,
+                headerTintColor: DynamicColorIOS({
+                  light: 'black',
+                  dark: 'white',
+                }),
               }}
             />
           </Stack.Navigator>
@@ -130,9 +102,6 @@ export default function App() {
 
 const styles = StyleSheet.create({
   root: {
-    flex: 1,
-  },
-  container: {
     flex: 1,
   },
   scrollEdgeBar: {
@@ -158,10 +127,27 @@ const styles = StyleSheet.create({
   },
   bottomBarText: {
     fontSize: 16,
+    color: DynamicColorIOS({
+      light: '#111111',
+      dark: '#f5f5f5',
+    }),
   },
   item: {
-    height: 250,
+    height: 120,
     justifyContent: 'center',
     paddingHorizontal: 20,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: '#d9d9d9',
+    backgroundColor: DynamicColorIOS({
+      light: '#ffffff',
+      dark: '#1b1b1d',
+    }),
+  },
+  itemText: {
+    fontSize: 22,
+    color: DynamicColorIOS({
+      light: '#111111',
+      dark: '#f5f5f5',
+    }),
   },
 });

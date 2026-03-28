@@ -10,6 +10,40 @@ require Pod::Executable.execute_command('node', ['-p',
 platform :ios, min_ios_version_supported
 prepare_react_native_project!
 
+def patch_fmt_consteval_bug(installer)
+  fmt_base = File.join(
+    installer.sandbox.root.to_s,
+    'fmt',
+    'include',
+    'fmt',
+    'base.h'
+  )
+
+  return unless File.exist?(fmt_base)
+
+  content = File.read(fmt_base)
+  original = <<~CODE
+      using checker =
+          detail::format_string_checker<Char, remove_cvref_t<Args>...>;
+      detail::parse_format_string<true>(str_, checker(s));
+  CODE
+  replacement = <<~CODE
+      using checker =
+          detail::format_string_checker<Char, remove_cvref_t<Args>...>;
+      if constexpr (detail::is_compile_string<S>::value) {
+        FMT_CONSTEXPR auto sv = basic_string_view<Char>(S());
+        detail::parse_format_string<true>(sv, checker(sv));
+      } else {
+        detail::parse_format_string<true>(str_, checker(s));
+      }
+  CODE
+
+  return unless content.include?(original)
+
+  File.write(fmt_base, content.sub(original, replacement))
+  Pod::UI.puts 'Patched fmt/base.h for newer clang consteval checks'.yellow
+end
+
 linkage = ENV['USE_FRAMEWORKS']
 if linkage != nil
   Pod::UI.puts "Configuring Pod with #{linkage}ally linked Frameworks".green
@@ -32,5 +66,6 @@ target 'ScrollEdgeBarExample' do
       :mac_catalyst_enabled => false,
       # :ccache_enabled => true
     )
+    patch_fmt_consteval_bug(installer)
   end
 end

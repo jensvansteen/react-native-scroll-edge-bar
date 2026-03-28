@@ -408,56 +408,9 @@ final class ScrollEdgeBarController: UIViewController {
 
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
-        updateSafeAreaForTabBar()
         guard !didSetup else { return }
         didSetup = true
         setupHostingController()
-    }
-
-    /// Detect a native tab bar and adjust the safe area so
-    /// `safeAreaBar(edge: .bottom)` positions above it automatically.
-    private func updateSafeAreaForTabBar() {
-        // 1. Try UITabBarController in the VC hierarchy
-        var vc: UIViewController? = parent
-        while let current = vc {
-            if let tabBarController = current as? UITabBarController,
-               !tabBarController.tabBar.isHidden,
-               tabBarController.tabBar.alpha > 0 {
-                let tabBarHeight = tabBarController.tabBar.bounds.height
-                let windowBottom = view.window?.safeAreaInsets.bottom ?? 0
-                let extra = max(0, tabBarHeight - windowBottom)
-                if additionalSafeAreaInsets.bottom != extra {
-                    additionalSafeAreaInsets.bottom = extra
-                }
-                return
-            }
-            vc = current.parent
-        }
-
-        // 2. Fallback: search for UITabBar in the window's view hierarchy
-        if let window = view.window, let tabBar = findTabBar(in: window) {
-            let tabBarHeight = tabBar.bounds.height
-            let windowBottom = window.safeAreaInsets.bottom
-            let extra = max(0, tabBarHeight - windowBottom)
-            if additionalSafeAreaInsets.bottom != extra {
-                additionalSafeAreaInsets.bottom = extra
-            }
-            return
-        }
-
-        if additionalSafeAreaInsets.bottom != 0 {
-            additionalSafeAreaInsets.bottom = 0
-        }
-    }
-
-    private func findTabBar(in view: UIView) -> UITabBar? {
-        if let tabBar = view as? UITabBar, !tabBar.isHidden, tabBar.alpha > 0 {
-            return tabBar
-        }
-        for subview in view.subviews {
-            if let found = findTabBar(in: subview) { return found }
-        }
-        return nil
     }
 
     private func makeBarContent(_ uiView: UIView?, estimatedHeight: CGFloat) -> AnyView? {
