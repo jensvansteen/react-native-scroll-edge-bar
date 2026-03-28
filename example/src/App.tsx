@@ -26,7 +26,7 @@ function ExampleScreen() {
     <ScrollEdgeBar
       style={styles.scrollEdgeBar}
       estimatedTopBarHeight={48}
-      estimatedBottomBarHeight={56}
+      estimatedBottomBarHeight={96}
     >
       <ScrollEdgeBar.TopBar style={styles.topBar}>
         <SegmentedControl
@@ -117,7 +117,7 @@ const styles = StyleSheet.create({
   },
   bottomBar: {
     paddingHorizontal: 16,
-    paddingVertical: 8,
+    paddingVertical: 24,
     backgroundColor: 'transparent',
   },
   bottomBarRow: {

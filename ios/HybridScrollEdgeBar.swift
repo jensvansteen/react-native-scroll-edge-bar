@@ -228,10 +228,15 @@ class ScrollEdgeBarContainerView: UIView {
 
         guard let startVC = nearestVC else { return nil }
 
-        // Walk up the VC parent chain to find the direct child of UINavigationController.
-        // safeAreaBar needs this proximity to detect the navigation bar's scroll edge.
+        // Walk up the VC parent chain and prefer the direct child of UITabBarController
+        // first, then fall back to the direct child of UINavigationController.
+        // This keeps the hosting controller close to the system container that owns
+        // the relevant safe area and scroll-edge behavior.
         var candidate = startVC
         while let parentVC = candidate.parent {
+            if parentVC is UITabBarController {
+                return candidate
+            }
             if parentVC is UINavigationController {
                 return candidate
             }
