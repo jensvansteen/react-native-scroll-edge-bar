@@ -147,7 +147,7 @@ class ScrollEdgeBarContainerView: UIView {
         }
 
         // If already set up, push newly-detected bar views to the controller
-        if #available(iOS 26.0, *), isSetup,
+        if #available(iOS 16.0, *), isSetup,
            let controller = edgeBarController as? ScrollEdgeBarController {
             if let topBarView = detectedTopBarView {
                 controller.setTopBar(topBarView)
@@ -291,7 +291,7 @@ class ScrollEdgeBarContainerView: UIView {
 
         isSetup = true
 
-        if #available(iOS 26.0, *) {
+        if #available(iOS 16.0, *) {
             let controller = ScrollEdgeBarController(scrollView: scrollView)
             controller.estimatedTopBarHeight = estimatedTopBarHeight
             controller.estimatedBottomBarHeight = estimatedBottomBarHeight
@@ -327,7 +327,7 @@ class ScrollEdgeBarContainerView: UIView {
     }
 
     private func cleanupController() {
-        if #available(iOS 26.0, *),
+        if #available(iOS 16.0, *),
            let controller = edgeBarController as? ScrollEdgeBarController {
             controller.cleanup()
         }
@@ -337,7 +337,7 @@ class ScrollEdgeBarContainerView: UIView {
     }
 
     private func offsetsDidChange() {
-        guard #available(iOS 26.0, *),
+        guard #available(iOS 16.0, *),
               let controller = edgeBarController as? ScrollEdgeBarController else { return }
         if !didNotifyOffsets {
             didNotifyOffsets = true
@@ -351,9 +351,9 @@ class ScrollEdgeBarContainerView: UIView {
     }
 }
 
-// MARK: - ScrollEdgeBarController (iOS 26+)
+// MARK: - ScrollEdgeBarController (iOS 16+, scroll-edge effect requires iOS 26)
 
-@available(iOS 26.0, *)
+@available(iOS 16.0, *)
 final class ScrollEdgeBarController: UIViewController {
 
     let scrollView: UIScrollView
@@ -366,6 +366,8 @@ final class ScrollEdgeBarController: UIViewController {
     private var bottomBarView: UIView?
     private var hostingController: UIHostingController<ScrollEdgeBarWrapperView>?
     private var didSetup = false
+    private var registeredScrollObservation: NSKeyValueObservation?
+    private var registeredScrollDebugCount = 0
 
     // Track original Fabric parents + subview indices for teardown restore
     private weak var scrollViewOriginalParent: UIView?
@@ -458,6 +460,54 @@ final class ScrollEdgeBarController: UIViewController {
         hosting.didMove(toParent: self)
         hostingController = hosting
         hosting.view.layoutIfNeeded()
+
+        // Register the SwiftUI scroll view with the navigation bar so the large
+        // title collapses naturally as the user scrolls. Done async so SwiftUI
+        // has finished its first layout pass before we search the hierarchy.
+        // This API is available on UIViewController and used here so the
+        // navigation bar tracks the SwiftUI-hosted scroll view instead of the
+        // original reparented React Native scroll view.
+        DispatchQueue.main.async { [weak self] in
+            guard let self else { return }
+            let swiftuiScrollView = self.findSwiftUIScrollView()
+            self.logScrollGeometry(label: "rn", scrollView: self.scrollView)
+            if let swiftuiScrollView {
+                self.logScrollGeometry(label: "swiftui", scrollView: swiftuiScrollView)
+            }
+            self.startRegisteredScrollDebug(label: "registered", on: self.scrollView)
+            self.parent?.setContentScrollView(self.scrollView, for: .top)
+        }
+    }
+
+    private func logScrollGeometry(label: String, scrollView: UIScrollView) {
+        print("[ScrollEdgeBar][NavTrack][\(label)] class=\(NSStringFromClass(type(of: scrollView))) contentInset.top=\(scrollView.contentInset.top) adjustedTop=\(scrollView.adjustedContentInset.top) offsetY=\(scrollView.contentOffset.y)")
+    }
+
+    private func startRegisteredScrollDebug(label: String, on scrollView: UIScrollView) {
+        registeredScrollObservation = nil
+        registeredScrollDebugCount = 0
+
+        print("[ScrollEdgeBar][NavTrack][\(label)] register class=\(NSStringFromClass(type(of: scrollView))) contentInset.top=\(scrollView.contentInset.top) adjustedTop=\(scrollView.adjustedContentInset.top) offsetY=\(scrollView.contentOffset.y)")
+
+        registeredScrollObservation = scrollView.observe(\.contentOffset, options: [.new]) { [weak self] sv, _ in
+            guard let self else { return }
+            guard self.registeredScrollDebugCount < 20 else { return }
+            self.registeredScrollDebugCount += 1
+            print("[ScrollEdgeBar][NavTrack][\(label)] offsetY=\(sv.contentOffset.y) contentInset.top=\(sv.contentInset.top) adjustedTop=\(sv.adjustedContentInset.top)")
+        }
+    }
+
+    private func findSwiftUIScrollView() -> UIScrollView? {
+        guard let hostingView = hostingController?.view else { return nil }
+        return firstScrollView(in: hostingView)
+    }
+
+    private func firstScrollView(in view: UIView) -> UIScrollView? {
+        if let sv = view as? UIScrollView { return sv }
+        for sub in view.subviews {
+            if let found = firstScrollView(in: sub) { return found }
+        }
+        return nil
     }
 
     private func updateHostingControllerIfNeeded() {
@@ -488,6 +538,8 @@ final class ScrollEdgeBarController: UIViewController {
         hostingController?.removeFromParent()
         hostingController = nil
         didSetup = false
+        registeredScrollObservation = nil
+        registeredScrollDebugCount = 0
 
         // Restore scroll view at its original index
         scrollView.removeFromSuperview()
@@ -510,6 +562,11 @@ final class ScrollEdgeBarController: UIViewController {
             bottomBar.removeFromSuperview()
             let idx = min(bottomBarOriginalIndex, parent.subviews.count)
             parent.insertSubview(bottomBar, at: idx)
+        }
+
+        // Deregister the scroll view from the navigation bar
+        if #available(iOS 26.0, *) {
+            parent?.setContentScrollView(nil, for: .top)
         }
 
         // Remove self from parent VC
@@ -547,9 +604,9 @@ final class PassthroughView: UIView {
     }
 }
 
-// MARK: - SwiftUI Views (iOS 26+)
+// MARK: - SwiftUI Views (iOS 16+, scroll-edge effect requires iOS 26)
 
-@available(iOS 26.0, *)
+@available(iOS 16.0, *)
 struct BarViewWrapper: UIViewRepresentable {
     let barView: UIView
     let estimatedHeight: CGFloat
@@ -603,7 +660,7 @@ struct BarViewWrapper: UIViewRepresentable {
     }
 }
 
-@available(iOS 26.0, *)
+@available(iOS 16.0, *)
 struct ScrollEdgeBarWrapperView: View {
     let scrollView: UIScrollView
     let topBarContent: AnyView?
@@ -623,6 +680,16 @@ struct ScrollEdgeBarWrapperView: View {
 
     @ViewBuilder
     private func applyBars<V: View>(to view: V) -> some View {
+        if #available(iOS 26.0, *) {
+            applyScrollEdgeBars(to: view)
+        } else {
+            applyInsetBars(to: view)
+        }
+    }
+
+    @available(iOS 26.0, *)
+    @ViewBuilder
+    private func applyScrollEdgeBars<V: View>(to view: V) -> some View {
         switch (topBarContent, bottomBarContent) {
         case (let top?, let bottom?):
             view
@@ -638,13 +705,31 @@ struct ScrollEdgeBarWrapperView: View {
             view
         }
     }
+
+    @ViewBuilder
+    private func applyInsetBars<V: View>(to view: V) -> some View {
+        switch (topBarContent, bottomBarContent) {
+        case (let top?, let bottom?):
+            view
+                .safeAreaInset(edge: .top) { top }
+                .safeAreaInset(edge: .bottom) { bottom }
+        case (let top?, nil):
+            view
+                .safeAreaInset(edge: .top) { top }
+        case (nil, let bottom?):
+            view
+                .safeAreaInset(edge: .bottom) { bottom }
+        case (nil, nil):
+            view
+        }
+    }
 }
 
 /// Embeds the RN scroll view (with scrolling disabled) inside a native SwiftUI
 /// ScrollView. SwiftUI handles scrolling so `safeAreaBar` works correctly.
 /// The scroll view is kept intact (no content extraction) so it survives
 /// rootView updates when bars are detected late.
-@available(iOS 26.0, *)
+@available(iOS 16.0, *)
 struct ScrollContentBridge: UIViewRepresentable {
     let scrollView: UIScrollView
     @Binding var contentHeight: CGFloat

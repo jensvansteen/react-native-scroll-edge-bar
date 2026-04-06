@@ -174,5 +174,10 @@
   "dependencies": {
     "react-native-safe-area-context": "^5.6.2",
     "react-native-screens": "^4.22.0"
+  },
+  "overrides": {
+    "react-native-nitro-sfsymbols": {
+      "react-native-nitro-modules": "$react-native-nitro-modules"
+    }
   }
 }
