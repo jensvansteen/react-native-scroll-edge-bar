@@ -1,74 +1,27 @@
-import React from 'react';
-import {
-  DynamicColorIOS,
-  ScrollView,
-  StyleSheet,
-  Switch,
-  Text,
-  View,
-} from 'react-native';
-import SegmentedControl from '@react-native-segmented-control/segmented-control';
+import { DynamicColorIOS, StyleSheet } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createNativeBottomTabNavigator } from '@react-navigation/bottom-tabs/unstable';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { enableScreens } from 'react-native-screens';
-import { ScrollEdgeBar } from 'react-native-scroll-edge-bar';
+import { ExampleMenuScreen } from './components/ExampleMenuScreen';
+import { ExampleScreen } from './screens/ExampleScreen';
+import { titleByKey } from './data';
+import type { RootStackParamList } from './types';
 
 enableScreens();
 
-const Stack = createNativeStackNavigator();
+const Stack = createNativeStackNavigator<RootStackParamList>();
 const Tabs = createNativeBottomTabNavigator();
 
-function ExampleScreen() {
+function HomeTabs() {
   return (
-    <ScrollEdgeBar
-      style={styles.scrollEdgeBar}
-      estimatedTopBarHeight={48}
-      estimatedBottomBarHeight={96}
-    >
-      <ScrollEdgeBar.TopBar style={styles.topBar}>
-        <SegmentedControl
-          values={['Free', 'Paid', 'Freemium']}
-          selectedIndex={0}
-          style={styles.segmented}
-        />
-      </ScrollEdgeBar.TopBar>
-
-      <ScrollView contentInsetAdjustmentBehavior="automatic">
-        {Array.from({ length: 50 }).map((_, i) => (
-          <View key={i} style={styles.item}>
-            <Text style={styles.itemText}>Item {i + 1}</Text>
-          </View>
-        ))}
-      </ScrollView>
-
-      <ScrollEdgeBar.BottomBar style={styles.bottomBar}>
-        <View style={styles.bottomBarRow}>
-          <Text style={styles.bottomBarText}>Bottom Bar</Text>
-          <Switch />
-        </View>
-      </ScrollEdgeBar.BottomBar>
-    </ScrollEdgeBar>
-  );
-}
-
-function TabsScreen() {
-  return (
-    <Tabs.Navigator
-      screenOptions={{
-        headerShown: false,
-        headerTransparent: true,
-        tabBarStyle: {
-          backgroundColor: 'transparent',
-        },
-      }}
-    >
+    <Tabs.Navigator screenOptions={{ headerShown: false }}>
       <Tabs.Screen
-        name="Example"
-        component={ExampleScreen}
-        options={{ title: 'Example' }}
+        name="Examples"
+        component={ExampleMenuScreen}
+        options={{ title: 'Examples' }}
       />
     </Tabs.Navigator>
   );
@@ -82,16 +35,31 @@ export default function App() {
           <Stack.Navigator>
             <Stack.Screen
               name="Home"
-              component={TabsScreen}
+              component={HomeTabs}
               options={{
-                title: 'Scroll Edge',
-                headerTransparent: true,
+                title: 'ScrollEdgeBar',
                 headerShadowVisible: false,
+                headerLargeTitleEnabled: true,
                 headerTintColor: DynamicColorIOS({
                   light: 'black',
                   dark: 'white',
-                }),
+                }) as string,
               }}
+            />
+            <Stack.Screen
+              name="Example"
+              component={ExampleScreen}
+              options={({ route }) => ({
+                title: titleByKey[route.params.key],
+                headerShadowVisible: false,
+                headerTransparent: true,
+                headerLargeTitleEnabled: true,
+                headerBackButtonDisplayMode: 'minimal',
+                headerTintColor: DynamicColorIOS({
+                  light: 'black',
+                  dark: 'white',
+                }) as string,
+              })}
             />
           </Stack.Navigator>
         </NavigationContainer>
@@ -103,51 +71,5 @@ export default function App() {
 const styles = StyleSheet.create({
   root: {
     flex: 1,
-  },
-  scrollEdgeBar: {
-    flex: 1,
-  },
-  topBar: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    backgroundColor: 'transparent',
-  },
-  segmented: {
-    height: 32,
-  },
-  bottomBar: {
-    paddingHorizontal: 16,
-    paddingVertical: 24,
-    backgroundColor: 'transparent',
-  },
-  bottomBarRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  bottomBarText: {
-    fontSize: 16,
-    color: DynamicColorIOS({
-      light: '#111111',
-      dark: '#f5f5f5',
-    }),
-  },
-  item: {
-    height: 120,
-    justifyContent: 'center',
-    paddingHorizontal: 20,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: '#d9d9d9',
-    backgroundColor: DynamicColorIOS({
-      light: '#ffffff',
-      dark: '#1b1b1d',
-    }),
-  },
-  itemText: {
-    fontSize: 22,
-    color: DynamicColorIOS({
-      light: '#111111',
-      dark: '#f5f5f5',
-    }),
   },
 });
