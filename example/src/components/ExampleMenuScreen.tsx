@@ -1,7 +1,7 @@
 import {
-  DynamicColorIOS,
+  FlatList,
+  PlatformColor,
   Pressable,
-  ScrollView,
   StyleSheet,
   Text,
   View,
@@ -11,76 +11,93 @@ import { exampleList } from '../data';
 
 export function ExampleMenuScreen({ navigation }: { navigation: any }) {
   return (
-    <ScrollView style={styles.menuScrollView}>
-      {exampleList.map((item) => (
+    <FlatList
+      data={exampleList}
+      keyExtractor={(item) => item.key}
+      style={styles.menuList}
+      contentContainerStyle={styles.menuContent}
+      renderItem={({ item }) => (
         <Pressable
-          key={item.key}
           onPress={() => navigation.push('Example', { key: item.key })}
-          style={styles.menuItem}
+          style={({ pressed }) => [
+            styles.menuItem,
+            pressed && styles.menuItemPressed,
+          ]}
         >
-          <View
-            style={[styles.menuIconWrap, { borderColor: `${item.tint}33` }]}
-          >
-            <SFSymbolView
-              name={item.symbol}
-              size={18}
-              tintColor={item.tint}
-              weight={SFSymbolWeight.REGULAR}
-            />
-          </View>
+          <SFSymbolView
+            name={item.symbol}
+            size={24}
+            tintColor="#007AFF"
+            weight={SFSymbolWeight.REGULAR}
+          />
           <View style={styles.menuTextColumn}>
             <Text style={styles.menuTitle}>{item.title}</Text>
             <Text style={styles.menuSubtitle}>{item.subtitle}</Text>
           </View>
-          <Text style={styles.menuChevron}>›</Text>
+          <View style={styles.menuChevronWrap}>
+            <SFSymbolView
+              name="chevron.right"
+              size={13}
+              tintColor="tertiaryLabel"
+              weight={SFSymbolWeight.REGULAR}
+            />
+          </View>
         </Pressable>
-      ))}
-    </ScrollView>
+      )}
+    />
   );
 }
 
 const styles = StyleSheet.create({
-  menuScrollView: {
+  menuList: {
     flex: 1,
-    backgroundColor: DynamicColorIOS({ light: '#f2f2f7', dark: '#000000' }),
+    backgroundColor: PlatformColor('systemBackground'),
+  },
+  menuContent: {
+    paddingBottom: 24,
   },
   menuItem: {
-    minHeight: 72,
+    minHeight: 78,
     paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingVertical: 14,
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: DynamicColorIOS({ light: '#d1d1d6', dark: '#2c2c2e' }),
-    backgroundColor: DynamicColorIOS({ light: '#ffffff', dark: '#1c1c1e' }),
+    borderBottomColor: PlatformColor('separator'),
+    backgroundColor: PlatformColor('systemBackground'),
     flexDirection: 'row',
     alignItems: 'center',
   },
+  menuItemPressed: {
+    opacity: 0.72,
+  },
   menuIconWrap: {
-    width: 30,
-    height: 30,
-    marginRight: 14,
+    width: 40,
+    height: 40,
+    marginRight: 16,
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
-    borderRadius: 8,
-    backgroundColor: DynamicColorIOS({ light: '#f8f8f8', dark: '#2a2a2d' }),
+    borderRadius: 12,
   },
   menuTextColumn: {
     flex: 1,
+    paddingRight: 12,
+    paddingLeft: 16,
   },
   menuTitle: {
     fontSize: 17,
+    lineHeight: 22,
     fontWeight: '600',
-    color: DynamicColorIOS({ light: '#111111', dark: '#f5f5f5' }),
+    color: PlatformColor('label'),
   },
   menuSubtitle: {
-    marginTop: 2,
-    fontSize: 12,
-    color: DynamicColorIOS({ light: '#6d6d72', dark: '#8e8e93' }),
+    marginTop: 1,
+    fontSize: 13,
+    lineHeight: 18,
+    fontWeight: '400',
+    color: PlatformColor('secondaryLabel'),
   },
-  menuChevron: {
-    marginLeft: 12,
-    fontSize: 24,
-    lineHeight: 24,
-    color: DynamicColorIOS({ light: '#c7c7cc', dark: '#636366' }),
+  menuChevronWrap: {
+    width: 24,
+    alignItems: 'flex-end',
   },
 });
