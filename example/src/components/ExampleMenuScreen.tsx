@@ -13,12 +13,12 @@ export function ExampleMenuScreen({ navigation }: { navigation: any }) {
   return (
     <FlatList
       data={exampleList}
-      keyExtractor={(item) => item.key}
+      keyExtractor={(item) => item.route}
       style={styles.menuList}
       contentContainerStyle={styles.menuContent}
       renderItem={({ item }) => (
         <Pressable
-          onPress={() => navigation.push('Example', { key: item.key })}
+          onPress={() => navigation.push(item.route)}
           style={({ pressed }) => [
             styles.menuItem,
             pressed && styles.menuItemPressed,

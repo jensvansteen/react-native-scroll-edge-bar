@@ -1,11 +1,16 @@
-import { DynamicColorIOS, StyleSheet, Text, View } from 'react-native';
-import { ExampleLayout } from '../components/ExampleLayout';
+import {
+  DynamicColorIOS,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
+import { ScrollEdgeBar } from 'react-native-scroll-edge-bar';
 
 export function CalendarScreen() {
   return (
-    <ExampleLayout
-      estimatedTopBarHeight={92}
-      topBar={
+    <ScrollEdgeBar style={styles.container} estimatedTopBarHeight={92}>
+      <ScrollEdgeBar.TopBar style={styles.topBar}>
         <View style={styles.calendarTopBar}>
           <View style={styles.weekRow}>
             {['M', 'T', 'W', 'T', 'F', 'S', 'S'].map((day, index) => (
@@ -24,21 +29,31 @@ export function CalendarScreen() {
           </View>
           <Text style={styles.calendarDateLabel}>Tuesday - Feb 3, 2026</Text>
         </View>
-      }
-    >
-      {Array.from({ length: 24 }).map((_, index) => (
-        <View key={index} style={styles.calendarRow}>
-          <Text style={styles.calendarHour}>
-            {String(index).padStart(2, '0')}:00
-          </Text>
-          <Text style={styles.calendarEvent}>Event slot {index + 1}</Text>
-        </View>
-      ))}
-    </ExampleLayout>
+      </ScrollEdgeBar.TopBar>
+
+      <ScrollView contentInsetAdjustmentBehavior="automatic">
+        {Array.from({ length: 24 }).map((_, index) => (
+          <View key={index} style={styles.calendarRow}>
+            <Text style={styles.calendarHour}>
+              {String(index).padStart(2, '0')}:00
+            </Text>
+            <Text style={styles.calendarEvent}>Event slot {index + 1}</Text>
+          </View>
+        ))}
+      </ScrollView>
+    </ScrollEdgeBar>
   );
 }
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+  topBar: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    backgroundColor: 'transparent',
+  },
   calendarTopBar: {
     gap: 10,
   },

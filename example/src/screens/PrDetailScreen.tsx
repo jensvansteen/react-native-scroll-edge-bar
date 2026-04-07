@@ -1,13 +1,21 @@
-import { DynamicColorIOS, StyleSheet, Text, View } from 'react-native';
-import { ExampleLayout } from '../components/ExampleLayout';
+import {
+  DynamicColorIOS,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
+import { ScrollEdgeBar } from 'react-native-scroll-edge-bar';
 import { sharedStyles } from '../styles/shared';
 
 export function PrDetailScreen() {
   return (
-    <ExampleLayout
+    <ScrollEdgeBar
+      style={styles.container}
       estimatedTopBarHeight={70}
       estimatedBottomBarHeight={88}
-      topBar={
+    >
+      <ScrollEdgeBar.TopBar style={styles.topBar}>
         <View style={styles.banner}>
           <Text style={styles.bannerText}>
             alexjohnson requested your review
@@ -16,8 +24,21 @@ export function PrDetailScreen() {
             <Text style={sharedStyles.badgeButtonText}>Review</Text>
           </View>
         </View>
-      }
-      bottomBar={
+      </ScrollEdgeBar.TopBar>
+
+      <ScrollView contentInsetAdjustmentBehavior="automatic">
+        {Array.from({ length: 10 }).map((_, index) => (
+          <View key={index} style={styles.detailBlock}>
+            <Text style={styles.sectionTitle}>Section {index + 1}</Text>
+            <Text style={styles.sectionBody}>
+              This is placeholder content for the PR detail example. The goal is
+              to verify top and bottom edge bars against long scrolling content.
+            </Text>
+          </View>
+        ))}
+      </ScrollView>
+
+      <ScrollEdgeBar.BottomBar style={styles.bottomBar}>
         <View style={sharedStyles.actionBar}>
           <Text style={sharedStyles.bottomLabel}>2 comments</Text>
           <View style={styles.actionButtons}>
@@ -29,22 +50,25 @@ export function PrDetailScreen() {
             </View>
           </View>
         </View>
-      }
-    >
-      {Array.from({ length: 10 }).map((_, index) => (
-        <View key={index} style={styles.detailBlock}>
-          <Text style={styles.sectionTitle}>Section {index + 1}</Text>
-          <Text style={styles.sectionBody}>
-            This is placeholder content for the PR detail example. The goal is
-            to verify top and bottom edge bars against long scrolling content.
-          </Text>
-        </View>
-      ))}
-    </ExampleLayout>
+      </ScrollEdgeBar.BottomBar>
+    </ScrollEdgeBar>
   );
 }
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+  topBar: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    backgroundColor: 'transparent',
+  },
+  bottomBar: {
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    backgroundColor: 'transparent',
+  },
   banner: {
     flexDirection: 'row',
     alignItems: 'center',
