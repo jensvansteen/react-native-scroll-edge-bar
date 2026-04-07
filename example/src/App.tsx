@@ -7,7 +7,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { enableScreens } from 'react-native-screens';
 import { ExampleMenuScreen } from './components/ExampleMenuScreen';
 import { ExampleScreen } from './screens/ExampleScreen';
-import { titleByKey } from './data';
+import { navigationByKey, titleByKey } from './data';
 import type { RootStackParamList } from './types';
 
 enableScreens();
@@ -55,6 +55,7 @@ export default function App() {
                 headerTransparent: true,
                 headerLargeTitleEnabled: true,
                 headerBackButtonDisplayMode: 'minimal',
+                ...navigationByKey[route.params.key],
                 headerTintColor: DynamicColorIOS({
                   light: 'black',
                   dark: 'white',
