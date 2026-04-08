@@ -31,12 +31,12 @@ const events = [
     durationHours: 2,
     color: '#AF52DE',
   },
-  {
-    title: 'Lunch',
-    startHour: 13,
-    durationHours: 1,
-    color: '#FF9F0A',
-  },
+  // {
+  //   title: 'Lunch',
+  //   startHour: 13,
+  //   durationHours: 1,
+  //   color: '#FF9F0A',
+  // },
   {
     title: 'Focus Time',
     startHour: 15,

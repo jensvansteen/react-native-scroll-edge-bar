@@ -21,38 +21,7 @@ yarn
 
 > Since the project relies on Yarn workspaces, you cannot use [`npm`](https://github.com/npm/cli) for development without manually migrating.
 
-This project uses Nitro Modules. If you're not familiar with how Nitro works, make sure to check the [Nitro Modules Docs](https://nitro.margelo.com/).
-
-You need to run [Nitrogen](https://nitro.margelo.com/docs/nitrogen) to generate the boilerplate code required for this project. The example app will not build without this step.
-
-Run **Nitrogen** in following cases:
-
-- When you make changes to any `*.nitro.ts` files.
-- When running the project for the first time (since the generated files are not committed to the repository).
-
-To invoke **Nitrogen**, use the following command:
-
-```sh
-yarn nitrogen
-```
-
-This command also reapplies the required Fabric unmount patch to:
-
-```sh
-nitrogen/generated/ios/c++/views/HybridRNScrollEdgeBarComponent.mm
-```
-
-Do not run `nitrogen` directly unless you also rerun:
-
-```sh
-yarn nitrogen:patch
-```
-
-To verify that the generated iOS component still contains the required Fabric lifecycle hooks, run:
-
-```sh
-yarn nitrogen:verify
-```
+This project currently uses plain React Native Fabric codegen for the iOS implementation.
 
 The [example app](/example/) demonstrates usage of the library. You need to run it to test any changes you make.
 

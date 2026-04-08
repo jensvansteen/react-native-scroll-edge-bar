@@ -15,16 +15,15 @@ Pod::Spec.new do |s|
   s.source       = { :git => "https://github.com/jensvansteen/react-native-scroll-edge-bar.git", :tag => "#{s.version}" }
 
   s.source_files = [
+    "common/cpp/**/*.{cpp,h}",
     "ios/**/*.{swift}",
     "ios/**/*.{m,mm}",
-    "cpp/**/*.{hpp,cpp}",
   ]
+  s.project_header_files = "common/cpp/**/*.h"
+  s.pod_target_xcconfig = {
+    "HEADER_SEARCH_PATHS" => "\"$(PODS_TARGET_SRCROOT)/common/cpp\""
+  }
 
-  s.dependency 'React-jsi'
-  s.dependency 'React-callinvoker'
-
-  load 'nitrogen/generated/ios/RNScrollEdgeBar+autolinking.rb'
-  add_nitrogen_files(s)
-
+  s.dependency 'React-Core'
   install_modules_dependencies(s)
 end

@@ -15,19 +15,10 @@
   "files": [
     "src",
     "lib",
-    "android",
+    "common",
     "ios",
-    "cpp",
-    "nitrogen",
-    "nitro.json",
     "*.podspec",
-    "react-native.config.js",
     "!ios/build",
-    "!android/build",
-    "!android/gradle",
-    "!android/gradlew",
-    "!android/gradlew.bat",
-    "!android/local.properties",
     "!**/__tests__",
     "!**/__fixtures__",
     "!**/__mocks__",
@@ -35,12 +26,8 @@
   ],
   "scripts": {
     "example": "yarn workspace react-native-scroll-edge-bar-example",
-    "clean": "del-cli android/build example/android/build example/android/app/build example/ios/build lib",
+    "clean": "del-cli example/android/build example/android/app/build example/ios/build lib",
     "prepare": "bob build",
-    "nitrogen:generate": "nitrogen",
-    "nitrogen:patch": "node scripts/patch-nitrogen-scroll-edge-bar.js",
-    "nitrogen:verify": "node scripts/verify-nitrogen-scroll-edge-bar.js",
-    "nitrogen": "yarn nitrogen:generate ./src && yarn nitrogen:patch",
     "typecheck": "tsc",
     "lint": "eslint \"**/*.{js,ts,tsx}\"",
     "test": "jest",
@@ -48,8 +35,7 @@
   },
   "keywords": [
     "react-native",
-    "ios",
-    "android"
+    "ios"
   ],
   "repository": {
     "type": "git",
@@ -81,36 +67,38 @@
     "eslint-plugin-prettier": "^5.5.4",
     "jest": "^29.7.0",
     "lefthook": "^2.0.3",
-    "nitrogen": "^0.33.7",
     "prettier": "^2.8.8",
     "react": "19.2.0",
     "react-native": "0.83.0",
     "react-native-builder-bob": "^0.40.13",
-    "react-native-nitro-modules": "^0.33.7",
     "release-it": "^19.0.4",
     "turbo": "^2.5.6",
     "typescript": "^5.9.2"
   },
   "peerDependencies": {
     "react": "*",
-    "react-native": "*",
-    "react-native-nitro-modules": "^0.33.7"
+    "react-native": "*"
   },
   "workspaces": [
     "example"
   ],
   "packageManager": "yarn@4.11.0",
+  "codegenConfig": {
+    "name": "scrolledgebar",
+    "type": "all",
+    "jsSrcsDir": "./src/fabric",
+    "ios": {
+      "componentProvider": {
+        "RNScrollEdgeBar": "RNScrollEdgeBarComponentView",
+        "RNScrollEdgeBarTopBar": "RNScrollEdgeBarTopBarComponentView",
+        "RNScrollEdgeBarBottomBar": "RNScrollEdgeBarBottomBarComponentView"
+      }
+    }
+  },
   "react-native-builder-bob": {
     "source": "src",
     "output": "lib",
     "targets": [
-      [
-        "custom",
-        {
-          "script": "nitrogen",
-          "clean": "nitrogen/"
-        }
-      ],
       [
         "module",
         {
@@ -164,8 +152,8 @@
     }
   },
   "create-react-native-library": {
-    "type": "nitro-view",
-    "languages": "kotlin-swift",
+    "type": "view",
+    "languages": "swift",
     "tools": [
       "eslint",
       "jest",
@@ -177,10 +165,5 @@
   "dependencies": {
     "react-native-safe-area-context": "^5.6.2",
     "react-native-screens": "^4.22.0"
-  },
-  "overrides": {
-    "react-native-nitro-sfsymbols": {
-      "react-native-nitro-modules": "$react-native-nitro-modules"
-    }
   }
 }
