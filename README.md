@@ -1,15 +1,15 @@
 # react-native-scroll-edge-bar
 
-`react-native-scroll-edge-bar` is a Nitro-based React Native view for attaching custom top and bottom bars to a scroll view on iOS.
+`react-native-scroll-edge-bar` is a Fabric-based React Native view for attaching custom top and bottom bars to a scroll view on iOS.
 
-It currently targets the iOS 26 `safeAreaBar` APIs and is implemented only on iOS. Android scaffolding exists in the repo, but there is no Android feature implementation yet.
+It currently targets the iOS 26 `safeAreaBar` APIs and is implemented only on iOS.
 
 ## Current Scope
 
 - iOS implementation: present
 - Android implementation: not implemented
 - Fabric / New Architecture: required
-- Native dependency: `react-native-nitro-modules`
+- Native dependency: none beyond standard React Native Fabric/codegen on iOS
 
 ## Public API
 
@@ -35,16 +35,16 @@ Available components:
   - Extra offset to push the top bar below an external header.
 - `bottomBarOffset?: number`
   - Extra offset to lift the bottom bar above an external tab bar.
-- Standard Nitro/RN view props such as `style`
+- Standard RN view props such as `style`
 
 ### `ScrollEdgeBar.TopBar` props
 
-- Standard Nitro/RN view props such as `style`
+- Standard RN view props such as `style`
 - `children`
 
 ### `ScrollEdgeBar.BottomBar` props
 
-- Standard Nitro/RN view props such as `style`
+- Standard RN view props such as `style`
 - `children`
 
 ## Usage
@@ -98,7 +98,7 @@ If your navigation header or tab bar is external to the scroll-edge-bar containe
 ## Installation
 
 ```sh
-npm install react-native-scroll-edge-bar react-native-nitro-modules
+npm install react-native-scroll-edge-bar
 ```
 
 Then install iOS pods in your app:
@@ -121,7 +121,6 @@ The example app in `example/` currently demonstrates:
 
 - iOS-only in practice
 - relies on view discovery and reparenting in Fabric, which is more fragile than a pure UIKit setup
-- generated Nitrogen iOS component files currently contain manual logic; regenerating Nitrogen can overwrite those changes
 - the implementation is currently tuned around iOS 26 APIs
 
 ## Repo Notes
@@ -129,7 +128,7 @@ The example app in `example/` currently demonstrates:
 Relevant files:
 
 - API surface: `src/index.tsx`
-- Nitro types: `src/RNScrollEdgeBar.nitro.ts`
+- Fabric specs: `src/fabric/*.ts`
 - iOS implementation: `ios/HybridScrollEdgeBar.swift`
 - example app: `example/src/App.tsx`
 

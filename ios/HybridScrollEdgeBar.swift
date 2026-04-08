@@ -1,6 +1,5 @@
 import UIKit
 import SwiftUI
-import NitroModules
 
 // MARK: - Marker Views
 
@@ -12,63 +11,9 @@ class ScrollEdgeBarTopBarView: UIView {}
 @objc(ScrollEdgeBarBottomBarView)
 class ScrollEdgeBarBottomBarView: UIView {}
 
-// MARK: - Nitro Hybrid Views
-
-class HybridScrollEdgeBarTopBar: HybridRNScrollEdgeBarTopBarSpec {
-    private let containerView = ScrollEdgeBarTopBarView()
-    var view: UIView { containerView }
-}
-
-class HybridScrollEdgeBarBottomBar: HybridRNScrollEdgeBarBottomBarSpec {
-    private let containerView = ScrollEdgeBarBottomBarView()
-    var view: UIView { containerView }
-}
-
-class HybridScrollEdgeBar: HybridRNScrollEdgeBarSpec {
-    private let containerView = ScrollEdgeBarContainerView()
-
-    var view: UIView { containerView }
-
-    var estimatedTopBarHeight: Double? = 60 {
-        didSet {
-            containerView.estimatedTopBarHeight = CGFloat(estimatedTopBarHeight ?? 60)
-        }
-    }
-
-    var estimatedBottomBarHeight: Double? = 60 {
-        didSet {
-            containerView.estimatedBottomBarHeight = CGFloat(estimatedBottomBarHeight ?? 60)
-        }
-    }
-
-    var topBarOffset: Double? = 0 {
-        didSet {
-            containerView.topBarOffset = CGFloat(topBarOffset ?? 0)
-        }
-    }
-
-    var bottomBarOffset: Double? = 0 {
-        didSet {
-            containerView.bottomBarOffset = CGFloat(bottomBarOffset ?? 0)
-        }
-    }
-
-    var topEdgeEffectStyle: String? = "automatic" {
-        didSet {
-            containerView.topEdgeEffectStyle = topEdgeEffectStyle ?? "automatic"
-        }
-    }
-
-    var bottomEdgeEffectStyle: String? = "automatic" {
-        didSet {
-            containerView.bottomEdgeEffectStyle = bottomEdgeEffectStyle ?? "automatic"
-        }
-    }
-
-}
-
 // MARK: - Container View
 
+@objc(ScrollEdgeBarContainerView)
 @objcMembers
 class ScrollEdgeBarContainerView: UIView {
     var estimatedTopBarHeight: CGFloat = 60
@@ -135,17 +80,16 @@ class ScrollEdgeBarContainerView: UIView {
     }
 
     private func detectChildViews() {
-        // In Fabric/Nitro, React children are siblings of this view inside the
-        // generated component wrapper, not direct subviews of the container.
+        // In Fabric, React children are siblings of this view inside the
+        // component wrapper, not direct subviews of the container.
         let searchViews = superview?.subviews ?? subviews
         for subview in searchViews where subview !== self {
             if detectedTopBarView == nil,
                let topBarMarker = findView(ofType: ScrollEdgeBarTopBarView.self, in: subview) {
-                // Use the wrapper that holds both the marker and the React content.
-                detectedTopBarView = topBarMarker.superview ?? topBarMarker
+                detectedTopBarView = topBarMarker
             } else if detectedBottomBarView == nil,
                       let bottomBarMarker = findView(ofType: ScrollEdgeBarBottomBarView.self, in: subview) {
-                detectedBottomBarView = bottomBarMarker.superview ?? bottomBarMarker
+                detectedBottomBarView = bottomBarMarker
             } else if detectedScrollView == nil,
                       let scrollView = findScrollView(in: subview) {
                 detectedScrollView = scrollView
@@ -170,7 +114,7 @@ class ScrollEdgeBarContainerView: UIView {
     func setTopBarView(_ view: UIView?) {
         if let view {
             let marker = findView(ofType: ScrollEdgeBarTopBarView.self, in: view)
-            detectedTopBarView = marker?.superview ?? marker
+            detectedTopBarView = marker
         } else {
             detectedTopBarView = nil
         }
@@ -180,7 +124,7 @@ class ScrollEdgeBarContainerView: UIView {
     func setBottomBarView(_ view: UIView?) {
         if let view {
             let marker = findView(ofType: ScrollEdgeBarBottomBarView.self, in: view)
-            detectedBottomBarView = marker?.superview ?? marker
+            detectedBottomBarView = marker
         } else {
             detectedBottomBarView = nil
         }

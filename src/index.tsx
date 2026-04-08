@@ -1,69 +1,83 @@
 import * as React from 'react';
-import { getHostComponent } from 'react-native-nitro-modules';
 import type { ReactNode } from 'react';
 import type { StyleProp, ViewStyle } from 'react-native';
-import type {
-  RNScrollEdgeBarMethods,
-  RNScrollEdgeBarProps,
-  RNScrollEdgeBarTopBarMethods,
-  RNScrollEdgeBarTopBarProps,
-  RNScrollEdgeBarBottomBarMethods,
-  RNScrollEdgeBarBottomBarProps,
-} from './RNScrollEdgeBar.nitro';
 
-// Generated configs
-const RNScrollEdgeBarConfig = require('../nitrogen/generated/shared/json/RNScrollEdgeBarConfig.json');
-const RNScrollEdgeBarTopBarConfig = require('../nitrogen/generated/shared/json/RNScrollEdgeBarTopBarConfig.json');
-const RNScrollEdgeBarBottomBarConfig = require('../nitrogen/generated/shared/json/RNScrollEdgeBarBottomBarConfig.json');
+import RNScrollEdgeBarNativeComponent, {
+  type NativeProps as RNScrollEdgeBarProps,
+} from './fabric/RNScrollEdgeBarNativeComponent';
+import RNScrollEdgeBarTopBarNativeComponent, {
+  type NativeProps as RNScrollEdgeBarTopBarProps,
+} from './fabric/RNScrollEdgeBarTopBarNativeComponent';
+import RNScrollEdgeBarBottomBarNativeComponent, {
+  type NativeProps as RNScrollEdgeBarBottomBarProps,
+} from './fabric/RNScrollEdgeBarBottomBarNativeComponent';
 
-// Base components
+export interface RNScrollEdgeBarMethods {}
+export interface RNScrollEdgeBarTopBarMethods {}
+export interface RNScrollEdgeBarBottomBarMethods {}
+
 export type ScrollEdgeBarProps = RNScrollEdgeBarProps & {
   children?: ReactNode;
   style?: StyleProp<ViewStyle>;
 };
-
-const ScrollEdgeBarBase = getHostComponent<
-  RNScrollEdgeBarProps,
-  RNScrollEdgeBarMethods
->('RNScrollEdgeBar', () => RNScrollEdgeBarConfig);
 
 export type ScrollEdgeBarTopBarProps = RNScrollEdgeBarTopBarProps & {
   children?: ReactNode;
   style?: StyleProp<ViewStyle>;
 };
 
-const TopBar = getHostComponent<
-  RNScrollEdgeBarTopBarProps,
-  RNScrollEdgeBarTopBarMethods
->('RNScrollEdgeBarTopBar', () => RNScrollEdgeBarTopBarConfig);
-
 export type ScrollEdgeBarBottomBarProps = RNScrollEdgeBarBottomBarProps & {
   children?: ReactNode;
   style?: StyleProp<ViewStyle>;
 };
 
-const BottomBar = getHostComponent<
-  RNScrollEdgeBarBottomBarProps,
-  RNScrollEdgeBarBottomBarMethods
->('RNScrollEdgeBarBottomBar', () => RNScrollEdgeBarBottomBarConfig);
-
 const ScrollEdgeBarComponent = React.forwardRef<
-  RNScrollEdgeBarMethods,
+  React.ElementRef<typeof RNScrollEdgeBarNativeComponent>,
   ScrollEdgeBarProps
 >((props, ref) =>
-  React.createElement(ScrollEdgeBarBase as React.ElementType, { ...props, ref })
+  React.createElement(RNScrollEdgeBarNativeComponent as React.ElementType, {
+    ...props,
+    ref,
+  })
+);
+
+const TopBar = React.forwardRef<
+  React.ElementRef<typeof RNScrollEdgeBarTopBarNativeComponent>,
+  ScrollEdgeBarTopBarProps
+>((props, ref) =>
+  React.createElement(
+    RNScrollEdgeBarTopBarNativeComponent as React.ElementType,
+    {
+      ...props,
+      ref,
+    }
+  )
+);
+
+const BottomBar = React.forwardRef<
+  React.ElementRef<typeof RNScrollEdgeBarBottomBarNativeComponent>,
+  ScrollEdgeBarBottomBarProps
+>((props, ref) =>
+  React.createElement(
+    RNScrollEdgeBarBottomBarNativeComponent as React.ElementType,
+    {
+      ...props,
+      ref,
+    }
+  )
 );
 
 ScrollEdgeBarComponent.displayName = 'ScrollEdgeBar';
+TopBar.displayName = 'ScrollEdgeBar.TopBar';
+BottomBar.displayName = 'ScrollEdgeBar.BottomBar';
 
-// Compound component
 export const ScrollEdgeBar = Object.assign(ScrollEdgeBarComponent, {
   TopBar,
   BottomBar,
 });
 
 export type {
-  RNScrollEdgeBarMethods,
-  RNScrollEdgeBarTopBarMethods,
-  RNScrollEdgeBarBottomBarMethods,
+  RNScrollEdgeBarProps,
+  RNScrollEdgeBarTopBarProps,
+  RNScrollEdgeBarBottomBarProps,
 };

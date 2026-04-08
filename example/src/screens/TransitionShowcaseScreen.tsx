@@ -28,12 +28,9 @@ export function TransitionShowcaseScreen() {
             <Text
               style={[
                 styles.colorBlockLabel,
-                {
-                  color:
-                    index % 2 === 0
-                      ? 'rgba(255,255,255,0.72)'
-                      : 'rgba(0,0,0,0.32)',
-                },
+                index % 2 === 0
+                  ? styles.colorBlockLabelLight
+                  : styles.colorBlockLabelDark,
               ]}
             >
               {color.name}
@@ -81,5 +78,11 @@ const styles = StyleSheet.create({
   colorBlockLabel: {
     fontSize: 28,
     fontWeight: '700',
+  },
+  colorBlockLabelLight: {
+    color: 'rgba(255,255,255,0.72)',
+  },
+  colorBlockLabelDark: {
+    color: 'rgba(0,0,0,0.32)',
   },
 });
