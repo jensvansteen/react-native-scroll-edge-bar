@@ -36,7 +36,7 @@ PODS:
     - ReactCommon/turbomodule/core
     - SocketRocket
     - Yoga
-  - NitroModules (0.33.7):
+  - NitroModules (0.31.10):
     - boost
     - DoubleConversion
     - fast_float
@@ -3018,7 +3018,7 @@ SPEC CHECKSUMS:
   glog: 5683914934d5b6e4240e497e0f4a3b42d1854183
   hermes-engine: 375b17d1732b179ad743a2a0c57569a0de17e767
   LiquidGlass: e177e3bf641a7f4dc5fc596825b5d2b4fada4e9e
-  NitroModules: e8ec707a245a85cf1eb4289f91a9372f9590a897
+  NitroModules: 5bc319d441f4983894ea66b1d392c519536e6d23
   NitroSfsymbols: 5853b2baaf1a21db8a27d18d66b8fcd7fdafdc76
   RCT-Folly: 59ec0ac1f2f39672a0c6e6cecdd39383b764646f
   RCTDeprecation: 2b70c6e3abe00396cefd8913efbf6a2db01a2b36
@@ -3095,8 +3095,8 @@ SPEC CHECKSUMS:
   RNScreens: c77cc7a5d1fbc23f0725b54e96eec81118453382
   ScrollEdgeBar: 7838bc5a8df069488b5612c3fedc07baf7f5e3a1
   SocketRocket: d4aabe649be1e368d1318fdf28a022d714d65748
-  Yoga: 6ca93c8c13f56baeec55eb608577619b17a4d64e
+  Yoga: 7a9f26c70daf0b08d82ec2f862e9a8872442129e
 
 PODFILE CHECKSUM: 9f12b969a6ade18978b8031561752c8cfbb0aed8
 
-COCOAPODS: 1.16.2
+COCOAPODS: 1.15.2

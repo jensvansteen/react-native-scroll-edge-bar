@@ -10292,6 +10292,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"react-native-nitro-modules@npm:~0.31.10":
+  version: 0.31.10
+  resolution: "react-native-nitro-modules@npm:0.31.10"
+  peerDependencies:
+    react: "*"
+    react-native: "*"
+  checksum: 10c0/0acc6ca5f12e24a6601e682070f257a771b95214c11fba911b342af705071234544c93076900f43400c8ae2f1a6738011b120e4425813968102997860ffd7626
+  languageName: node
+  linkType: hard
+
 "react-native-nitro-sfsymbols@npm:^1.2.0":
   version: 1.2.0
   resolution: "react-native-nitro-sfsymbols@npm:1.2.0"
@@ -10350,6 +10360,7 @@ __metadata:
     react-native-builder-bob: "npm:^0.40.13"
     react-native-gesture-handler: "npm:^2.21.0"
     react-native-monorepo-config: "npm:^0.3.1"
+    react-native-nitro-modules: "npm:~0.31.10"
     react-native-nitro-sfsymbols: "npm:^1.2.0"
     react-native-safe-area-context: "npm:^5.6.2"
     react-native-screens: "npm:^4.22.0"

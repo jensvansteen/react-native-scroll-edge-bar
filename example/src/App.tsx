@@ -132,7 +132,10 @@ export default function App() {
                 title: 'Search Bar',
                 headerShadowVisible: false,
                 headerTransparent: true,
-                headerLargeTitleEnabled: true,
+                headerSearchBarOptions: {
+                  placement: 'stacked',
+                  allowToolbarIntegration: false,
+                },
                 headerBackButtonDisplayMode: 'minimal',
                 headerTintColor: DynamicColorIOS({
                   light: 'black',
