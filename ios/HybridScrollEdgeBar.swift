@@ -71,9 +71,6 @@ class HybridScrollEdgeBar: HybridRNScrollEdgeBarSpec {
 
 @objcMembers
 class ScrollEdgeBarContainerView: UIView {
-
-    private static let bridgeWillReloadNotification = Notification.Name("RCTBridgeWillReloadNotification")
-
     var estimatedTopBarHeight: CGFloat = 60
     var estimatedBottomBarHeight: CGFloat = 60
     var topBarOffset: CGFloat = 0 {
@@ -97,31 +94,6 @@ class ScrollEdgeBarContainerView: UIView {
     private var detectedScrollView: UIScrollView?
     private var didAttachControllerView = false
     private var didNotifyOffsets: Bool = false
-    private var isBridgeReloading = false
-
-    override init(frame: CGRect) {
-        super.init(frame: frame)
-        NotificationCenter.default.addObserver(
-            self,
-            selector: #selector(handleBridgeWillReload),
-            name: Self.bridgeWillReloadNotification,
-            object: nil
-        )
-    }
-
-    required init?(coder: NSCoder) {
-        super.init(coder: coder)
-        NotificationCenter.default.addObserver(
-            self,
-            selector: #selector(handleBridgeWillReload),
-            name: Self.bridgeWillReloadNotification,
-            object: nil
-        )
-    }
-
-    deinit {
-        NotificationCenter.default.removeObserver(self)
-    }
 
     override func point(inside point: CGPoint, with event: UIEvent?) -> Bool {
         return false
@@ -141,23 +113,9 @@ class ScrollEdgeBarContainerView: UIView {
         }
     }
 
-    override func willMove(toWindow newWindow: UIWindow?) {
-        super.willMove(toWindow: newWindow)
-        // Restore reparented views before Fabric unmounts them.
-        #if DEBUG
-        if newWindow == nil && window != nil {
-            return
-        }
-        #endif
-        if newWindow == nil && window != nil && !isBridgeReloading {
-            cleanupController()
-        }
-    }
-
     override func didMoveToWindow() {
         super.didMoveToWindow()
         if window != nil {
-            isBridgeReloading = false
             parentViewController = findViewController()
             trySetup()
         }
@@ -380,10 +338,6 @@ class ScrollEdgeBarContainerView: UIView {
     /// Called from generated ObjC++ unmount code before Fabric tears down children.
     @objc func prepareForFabricUnmount() {
         cleanupController()
-    }
-
-    @objc private func handleBridgeWillReload() {
-        isBridgeReloading = true
     }
 
     private func cleanupController() {

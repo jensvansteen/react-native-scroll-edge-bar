@@ -147,6 +147,7 @@ export function CalendarScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: 'white',
   },
   topBar: {
     paddingHorizontal: 0,

@@ -103,7 +103,6 @@ export default function App() {
                 title: 'Transition Showcase',
                 headerShadowVisible: false,
                 headerTransparent: true,
-                headerLargeTitleEnabled: true,
                 headerBackButtonDisplayMode: 'minimal',
                 headerTintColor: DynamicColorIOS({
                   light: 'black',
