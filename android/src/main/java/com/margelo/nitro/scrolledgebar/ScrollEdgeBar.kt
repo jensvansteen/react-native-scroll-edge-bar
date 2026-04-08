@@ -3,19 +3,16 @@ package com.margelo.nitro.scrolledgebar
 import android.view.View
 import com.facebook.proguard.annotations.DoNotStrip
 import com.facebook.react.uimanager.ThemedReactContext
-import androidx.core.graphics.toColorInt
 
 @DoNotStrip
-class HybridScrollEdgeBar(val context: ThemedReactContext) : HybridScrollEdgeBarSpec() {
+class HybridScrollEdgeBar(private val context: ThemedReactContext) : HybridRNScrollEdgeBarSpec() {
 
   override val view: View = View(context)
 
-  private var _color = "#000"
-  override var color: String
-      get() = _color
-      set(value) {
-          _color = value
-          val color = value.toColorInt()
-          view.setBackgroundColor(color)
-      }
+  override var estimatedTopBarHeight: Double? = null
+  override var estimatedBottomBarHeight: Double? = null
+  override var topBarOffset: Double? = null
+  override var bottomBarOffset: Double? = null
+  override var topEdgeEffectStyle: String? = null
+  override var bottomEdgeEffectStyle: String? = null
 }
