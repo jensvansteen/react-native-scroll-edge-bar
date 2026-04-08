@@ -39,6 +39,7 @@
     "prepare": "bob build",
     "nitrogen:generate": "nitrogen",
     "nitrogen:patch": "node scripts/patch-nitrogen-scroll-edge-bar.js",
+    "nitrogen:verify": "node scripts/verify-nitrogen-scroll-edge-bar.js",
     "nitrogen": "yarn nitrogen:generate ./src && yarn nitrogen:patch",
     "typecheck": "tsc",
     "lint": "eslint \"**/*.{js,ts,tsx}\"",
