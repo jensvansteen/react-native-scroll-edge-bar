@@ -52,12 +52,27 @@ class HybridScrollEdgeBar: HybridRNScrollEdgeBarSpec {
             containerView.bottomBarOffset = CGFloat(bottomBarOffset ?? 0)
         }
     }
+
+    var topEdgeEffectStyle: String? = "automatic" {
+        didSet {
+            containerView.topEdgeEffectStyle = topEdgeEffectStyle ?? "automatic"
+        }
+    }
+
+    var bottomEdgeEffectStyle: String? = "automatic" {
+        didSet {
+            containerView.bottomEdgeEffectStyle = bottomEdgeEffectStyle ?? "automatic"
+        }
+    }
+
 }
 
 // MARK: - Container View
 
 @objcMembers
 class ScrollEdgeBarContainerView: UIView {
+
+    private static let bridgeWillReloadNotification = Notification.Name("RCTBridgeWillReloadNotification")
 
     var estimatedTopBarHeight: CGFloat = 60
     var estimatedBottomBarHeight: CGFloat = 60
@@ -67,7 +82,12 @@ class ScrollEdgeBarContainerView: UIView {
     var bottomBarOffset: CGFloat = 0 {
         didSet { offsetsDidChange() }
     }
-
+    var topEdgeEffectStyle: String = "automatic" {
+        didSet { edgeEffectStylesDidChange() }
+    }
+    var bottomEdgeEffectStyle: String = "automatic" {
+        didSet { edgeEffectStylesDidChange() }
+    }
     private var edgeBarController: AnyObject?
     private weak var parentViewController: UIViewController?
     private var isSetup = false
@@ -77,6 +97,31 @@ class ScrollEdgeBarContainerView: UIView {
     private var detectedScrollView: UIScrollView?
     private var didAttachControllerView = false
     private var didNotifyOffsets: Bool = false
+    private var isBridgeReloading = false
+
+    override init(frame: CGRect) {
+        super.init(frame: frame)
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(handleBridgeWillReload),
+            name: Self.bridgeWillReloadNotification,
+            object: nil
+        )
+    }
+
+    required init?(coder: NSCoder) {
+        super.init(coder: coder)
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(handleBridgeWillReload),
+            name: Self.bridgeWillReloadNotification,
+            object: nil
+        )
+    }
+
+    deinit {
+        NotificationCenter.default.removeObserver(self)
+    }
 
     override func point(inside point: CGPoint, with event: UIEvent?) -> Bool {
         return false
@@ -99,7 +144,12 @@ class ScrollEdgeBarContainerView: UIView {
     override func willMove(toWindow newWindow: UIWindow?) {
         super.willMove(toWindow: newWindow)
         // Restore reparented views before Fabric unmounts them.
+        #if DEBUG
         if newWindow == nil && window != nil {
+            return
+        }
+        #endif
+        if newWindow == nil && window != nil && !isBridgeReloading {
             cleanupController()
         }
     }
@@ -107,6 +157,7 @@ class ScrollEdgeBarContainerView: UIView {
     override func didMoveToWindow() {
         super.didMoveToWindow()
         if window != nil {
+            isBridgeReloading = false
             parentViewController = findViewController()
             trySetup()
         }
@@ -159,12 +210,22 @@ class ScrollEdgeBarContainerView: UIView {
 
     // Explicit wiring from the generated component view.
     func setTopBarView(_ view: UIView?) {
-        detectedTopBarView = view as? ScrollEdgeBarTopBarView
+        if let view {
+            let marker = findView(ofType: ScrollEdgeBarTopBarView.self, in: view)
+            detectedTopBarView = marker?.superview ?? marker
+        } else {
+            detectedTopBarView = nil
+        }
         trySetup()
     }
 
     func setBottomBarView(_ view: UIView?) {
-        detectedBottomBarView = view as? ScrollEdgeBarBottomBarView
+        if let view {
+            let marker = findView(ofType: ScrollEdgeBarBottomBarView.self, in: view)
+            detectedBottomBarView = marker?.superview ?? marker
+        } else {
+            detectedBottomBarView = nil
+        }
         trySetup()
     }
 
@@ -291,6 +352,7 @@ class ScrollEdgeBarContainerView: UIView {
             controller.estimatedTopBarHeight = estimatedTopBarHeight
             controller.estimatedBottomBarHeight = estimatedBottomBarHeight
             controller.setOffsets(top: topBarOffset, bottom: bottomBarOffset)
+            controller.setEdgeEffectStyles(top: topEdgeEffectStyle, bottom: bottomEdgeEffectStyle)
 
             if let topBarView = detectedTopBarView {
                 controller.setTopBar(topBarView)
@@ -320,6 +382,10 @@ class ScrollEdgeBarContainerView: UIView {
         cleanupController()
     }
 
+    @objc private func handleBridgeWillReload() {
+        isBridgeReloading = true
+    }
+
     private func cleanupController() {
         if #available(iOS 16.0, *),
            let controller = edgeBarController as? ScrollEdgeBarController {
@@ -343,6 +409,12 @@ class ScrollEdgeBarContainerView: UIView {
             controller.setOffsets(top: topBarOffset, bottom: bottomBarOffset)
         }
     }
+
+    private func edgeEffectStylesDidChange() {
+        guard #available(iOS 16.0, *),
+              let controller = edgeBarController as? ScrollEdgeBarController else { return }
+        controller.setEdgeEffectStyles(top: topEdgeEffectStyle, bottom: bottomEdgeEffectStyle)
+    }
 }
 
 // MARK: - ScrollEdgeBarController
@@ -355,7 +427,8 @@ final class ScrollEdgeBarController: UIViewController {
     var estimatedBottomBarHeight: CGFloat = 60
     var topBarOffset: CGFloat = 0
     var bottomBarOffset: CGFloat = 0
-
+    var topEdgeEffectStyle: String = "automatic"
+    var bottomEdgeEffectStyle: String = "automatic"
     private var topBarView: UIView?
     private var bottomBarView: UIView?
     private var hostingController: UIHostingController<ScrollEdgeBarWrapperView>?
@@ -466,6 +539,7 @@ final class ScrollEdgeBarController: UIViewController {
         hosting.didMove(toParent: self)
         hostingController = hosting
         hosting.view.layoutIfNeeded()
+        applyEdgeEffectStyles()
         let estimatedInsets = UIEdgeInsets(
             top: estimatedTopBarHeight + topBarOffset,
             left: 0,
@@ -507,6 +581,30 @@ final class ScrollEdgeBarController: UIViewController {
         topBarOffset = top
         bottomBarOffset = bottom
         updateHostingControllerIfNeeded()
+    }
+
+    func setEdgeEffectStyles(top: String, bottom: String) {
+        topEdgeEffectStyle = top
+        bottomEdgeEffectStyle = bottom
+        applyEdgeEffectStyles()
+    }
+
+    private func applyEdgeEffectStyles() {
+        guard #available(iOS 26.0, *) else { return }
+        scrollView.topEdgeEffect.style = mapEdgeEffectStyle(topEdgeEffectStyle)
+        scrollView.bottomEdgeEffect.style = mapEdgeEffectStyle(bottomEdgeEffectStyle)
+    }
+
+    @available(iOS 26.0, *)
+    private func mapEdgeEffectStyle(_ style: String) -> UIScrollEdgeEffect.Style {
+        switch style.lowercased() {
+        case "hard":
+            return .hard
+        case "soft":
+            return .soft
+        default:
+            return .automatic
+        }
     }
 
     private func applyInsets() {

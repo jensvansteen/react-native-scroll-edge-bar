@@ -89,7 +89,6 @@ export default function App() {
                 title: 'PR Detail',
                 headerShadowVisible: false,
                 headerTransparent: true,
-                headerLargeTitleEnabled: true,
                 headerBackButtonDisplayMode: 'minimal',
                 headerTintColor: DynamicColorIOS({
                   light: 'black',
@@ -161,10 +160,9 @@ export default function App() {
               name="Calendar"
               component={CalendarScreen}
               options={{
-                title: 'Calendar',
+                title: 'February',
                 headerShadowVisible: false,
                 headerTransparent: true,
-                headerLargeTitleEnabled: true,
                 headerBackButtonDisplayMode: 'minimal',
                 headerTintColor: DynamicColorIOS({
                   light: 'black',

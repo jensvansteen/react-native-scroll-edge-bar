@@ -14,6 +14,10 @@ export interface RNScrollEdgeBarProps extends HybridViewProps {
   topBarOffset?: number;
   /** Extra offset to lift the bottom bar above a tab bar */
   bottomBarOffset?: number;
+  /** iOS 26+: edge effect style for the top edge (`automatic`, `soft`, `hard`) */
+  topEdgeEffectStyle?: string;
+  /** iOS 26+: edge effect style for the bottom edge (`automatic`, `soft`, `hard`) */
+  bottomEdgeEffectStyle?: string;
 }
 export interface RNScrollEdgeBarMethods extends HybridViewMethods {}
 

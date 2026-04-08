@@ -16,7 +16,7 @@ export function AppStoreScreen() {
     <ScrollEdgeBar style={styles.container} estimatedTopBarHeight={48}>
       <ScrollEdgeBar.TopBar style={styles.topBar}>
         <SegmentedControl
-          values={['Free Apps', 'Paid Apps']}
+          values={['Free Apps', 'Freemium Apps']}
           selectedIndex={0}
           style={styles.segmentedControl}
         />
