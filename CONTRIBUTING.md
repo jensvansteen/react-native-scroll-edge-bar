@@ -36,6 +36,18 @@ To invoke **Nitrogen**, use the following command:
 yarn nitrogen
 ```
 
+This command also reapplies the required Fabric unmount patch to:
+
+```sh
+nitrogen/generated/ios/c++/views/HybridRNScrollEdgeBarComponent.mm
+```
+
+Do not run `nitrogen` directly unless you also rerun:
+
+```sh
+yarn nitrogen:patch
+```
+
 The [example app](/example/) demonstrates usage of the library. You need to run it to test any changes you make.
 
 It is configured to use the local version of the library, so any changes you make to the library's source code will be reflected in the example app. Changes to the library's JavaScript code will be reflected in the example app without a rebuild, but native code changes will require a rebuild of the example app.
