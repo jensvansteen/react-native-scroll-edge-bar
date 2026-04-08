@@ -1,22 +1,21 @@
-export type ExampleKey =
-  | 'appStore'
-  | 'pullRequests'
-  | 'prDetail'
-  | 'transitionShowcase'
-  | 'toolbar'
-  | 'searchBar'
-  | 'tabAccessory'
-  | 'calendar';
-
-export type ExampleNavigationConfig = {
-  title?: string;
-  headerTransparent?: boolean;
-  headerLargeTitleEnabled?: boolean;
-  headerShadowVisible?: boolean;
-  headerBackButtonDisplayMode?: 'default' | 'generic' | 'minimal';
-};
+export type ExampleRouteName =
+  | 'AppStore'
+  | 'PullRequests'
+  | 'PrDetail'
+  | 'TransitionShowcase'
+  | 'Toolbar'
+  | 'SearchBar'
+  | 'TabAccessory'
+  | 'Calendar';
 
 export type RootStackParamList = {
   Home: undefined;
-  Example: { key: ExampleKey };
+  AppStore: undefined;
+  PullRequests: undefined;
+  PrDetail: undefined;
+  TransitionShowcase: undefined;
+  Toolbar: undefined;
+  SearchBar: undefined;
+  TabAccessory: undefined;
+  Calendar: undefined;
 };

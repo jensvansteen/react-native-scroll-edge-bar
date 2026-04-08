@@ -1,22 +1,48 @@
-import { StyleSheet, Switch, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
 import SegmentedControl from '@react-native-segmented-control/segmented-control';
-import { ExampleLayout, segmentedStyle } from '../components/ExampleLayout';
+import { ScrollEdgeBar } from 'react-native-scroll-edge-bar';
 import { sharedStyles } from '../styles/shared';
 import { transitionColors } from '../data';
 
 export function TransitionShowcaseScreen() {
   return (
-    <ExampleLayout
+    <ScrollEdgeBar
+      style={styles.container}
       estimatedTopBarHeight={48}
       estimatedBottomBarHeight={88}
-      topBar={
+    >
+      <ScrollEdgeBar.TopBar style={styles.topBar}>
         <SegmentedControl
           values={['Colors', 'Gradients', 'Patterns']}
           selectedIndex={0}
-          style={segmentedStyle}
+          style={styles.segmentedControl}
         />
-      }
-      bottomBar={
+      </ScrollEdgeBar.TopBar>
+
+      <ScrollView contentInsetAdjustmentBehavior="automatic">
+        {transitionColors.map((color, index) => (
+          <View
+            key={color.name}
+            style={[styles.colorBlock, { backgroundColor: color.value }]}
+          >
+            <Text
+              style={[
+                styles.colorBlockLabel,
+                {
+                  color:
+                    index % 2 === 0
+                      ? 'rgba(255,255,255,0.72)'
+                      : 'rgba(0,0,0,0.32)',
+                },
+              ]}
+            >
+              {color.name}
+            </Text>
+          </View>
+        ))}
+      </ScrollView>
+
+      <ScrollEdgeBar.BottomBar style={styles.bottomBar}>
         <View style={sharedStyles.actionBar}>
           <Text style={sharedStyles.bottomLabel}>Test</Text>
           <Switch value />
@@ -25,33 +51,28 @@ export function TransitionShowcaseScreen() {
             <Text style={sharedStyles.smallButtonText}>Reset</Text>
           </View>
         </View>
-      }
-    >
-      {transitionColors.map((color, index) => (
-        <View
-          key={color.name}
-          style={[styles.colorBlock, { backgroundColor: color.value }]}
-        >
-          <Text
-            style={[
-              styles.colorBlockLabel,
-              {
-                color:
-                  index % 2 === 0
-                    ? 'rgba(255,255,255,0.72)'
-                    : 'rgba(0,0,0,0.32)',
-              },
-            ]}
-          >
-            {color.name}
-          </Text>
-        </View>
-      ))}
-    </ExampleLayout>
+      </ScrollEdgeBar.BottomBar>
+    </ScrollEdgeBar>
   );
 }
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+  topBar: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    backgroundColor: 'transparent',
+  },
+  bottomBar: {
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    backgroundColor: 'transparent',
+  },
+  segmentedControl: {
+    height: 32,
+  },
   colorBlock: {
     height: 320,
     alignItems: 'center',

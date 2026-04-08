@@ -6,7 +6,7 @@ import {
   View,
 } from 'react-native';
 import { SFSymbolView, SFSymbolWeight } from 'react-native-nitro-sfsymbols';
-import { ExampleLayout } from '../components/ExampleLayout';
+import { ScrollEdgeBar } from 'react-native-scroll-edge-bar';
 
 const prItems = [
   {
@@ -46,9 +46,8 @@ const filterChips = ['Open', 'Involved', 'Visibility', 'Org'];
 
 export function PullRequestsScreen() {
   return (
-    <ExampleLayout
-      estimatedTopBarHeight={56}
-      topBar={
+    <ScrollEdgeBar style={styles.container} estimatedTopBarHeight={56}>
+      <ScrollEdgeBar.TopBar style={styles.topBar}>
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
@@ -87,29 +86,39 @@ export function PullRequestsScreen() {
             </View>
           ))}
         </ScrollView>
-      }
-    >
-      {prItems.map((item, index) => (
-        <View key={index} style={styles.prRow}>
-          <SFSymbolView
-            name="arrow.triangle.pull"
-            size={16}
-            tintColor="#34c759"
-            weight={SFSymbolWeight.MEDIUM}
-          />
-          <View style={styles.prContent}>
-            <Text style={styles.prTitle}>{item.title}</Text>
-            <Text style={styles.prMeta}>
-              {item.repo} · {item.age}
-            </Text>
+      </ScrollEdgeBar.TopBar>
+
+      <ScrollView contentInsetAdjustmentBehavior="automatic">
+        {prItems.map((item, index) => (
+          <View key={index} style={styles.prRow}>
+            <SFSymbolView
+              name="arrow.triangle.pull"
+              size={16}
+              tintColor="#34c759"
+              weight={SFSymbolWeight.MEDIUM}
+            />
+            <View style={styles.prContent}>
+              <Text style={styles.prTitle}>{item.title}</Text>
+              <Text style={styles.prMeta}>
+                {item.repo} · {item.age}
+              </Text>
+            </View>
           </View>
-        </View>
-      ))}
-    </ExampleLayout>
+        ))}
+      </ScrollView>
+    </ScrollEdgeBar>
   );
 }
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+  topBar: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    backgroundColor: 'transparent',
+  },
   chipsRow: {
     gap: 8,
     paddingRight: 16,

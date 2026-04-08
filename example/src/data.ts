@@ -1,126 +1,60 @@
-import type { ExampleKey, ExampleNavigationConfig } from './types';
+import type { ExampleRouteName } from './types';
 
 export const exampleList: Array<{
-  key: ExampleKey;
+  route: ExampleRouteName;
   title: string;
   subtitle: string;
   symbol: string;
-  navigation?: ExampleNavigationConfig;
 }> = [
   {
-    key: 'appStore',
+    route: 'AppStore',
     title: 'App Store Listing',
     subtitle: 'Segmented control top bar',
     symbol: 'bag',
-    navigation: {
-      title: 'App Store Listing',
-      headerTransparent: true,
-      headerLargeTitleEnabled: false,
-      headerShadowVisible: false,
-      headerBackButtonDisplayMode: 'minimal',
-    },
   },
   {
-    key: 'pullRequests',
+    route: 'PullRequests',
     title: 'Pull Requests',
     subtitle: 'Filter chips with large title',
     symbol: 'arrow.triangle.pull',
-    navigation: {
-      title: 'Pull Requests',
-      headerTransparent: true,
-      headerLargeTitleEnabled: true,
-      headerShadowVisible: false,
-      headerBackButtonDisplayMode: 'minimal',
-    },
   },
   {
-    key: 'prDetail',
+    route: 'PrDetail',
     title: 'PR Detail',
     subtitle: 'Review banner + action buttons',
     symbol: 'text.page.badge.magnifyingglass',
-    navigation: {
-      title: 'PR Detail',
-      headerTransparent: true,
-      headerLargeTitleEnabled: true,
-      headerShadowVisible: false,
-      headerBackButtonDisplayMode: 'minimal',
-    },
   },
   {
-    key: 'transitionShowcase',
+    route: 'TransitionShowcase',
     title: 'Transition Showcase',
     subtitle: 'Top and bottom bars over color blocks',
     symbol: 'paintpalette',
-    navigation: {
-      title: 'Transition Showcase',
-      headerTransparent: true,
-      headerLargeTitleEnabled: true,
-      headerShadowVisible: false,
-      headerBackButtonDisplayMode: 'minimal',
-    },
   },
   {
-    key: 'toolbar',
+    route: 'Toolbar',
     title: 'Toolbar',
     subtitle: 'Bottom edge bar emphasis',
     symbol: 'hammer',
-    navigation: {
-      title: 'Toolbar',
-      headerTransparent: true,
-      headerLargeTitleEnabled: true,
-      headerShadowVisible: false,
-      headerBackButtonDisplayMode: 'minimal',
-    },
   },
   {
-    key: 'searchBar',
+    route: 'SearchBar',
     title: 'Search Bar',
     subtitle: 'Search-like screen with segmented top bar',
     symbol: 'magnifyingglass',
-    navigation: {
-      title: 'Search Bar',
-      headerTransparent: true,
-      headerLargeTitleEnabled: true,
-      headerShadowVisible: false,
-      headerBackButtonDisplayMode: 'minimal',
-    },
   },
   {
-    key: 'tabAccessory',
+    route: 'TabAccessory',
     title: 'Tab Accessory',
     subtitle: 'Large bottom accessory-style bar',
     symbol: 'music.note.list',
-    navigation: {
-      title: 'Tab Accessory',
-      headerTransparent: true,
-      headerLargeTitleEnabled: true,
-      headerShadowVisible: false,
-      headerBackButtonDisplayMode: 'minimal',
-    },
   },
   {
-    key: 'calendar',
+    route: 'Calendar',
     title: 'Calendar',
     subtitle: 'Week selector with stronger top bar',
     symbol: 'calendar',
-    navigation: {
-      title: 'Calendar',
-      headerTransparent: true,
-      headerLargeTitleEnabled: true,
-      headerShadowVisible: false,
-      headerBackButtonDisplayMode: 'minimal',
-    },
   },
 ];
-
-export const titleByKey: Record<ExampleKey, string> = Object.fromEntries(
-  exampleList.map((item) => [item.key, item.title])
-) as Record<ExampleKey, string>;
-
-export const navigationByKey: Record<ExampleKey, ExampleNavigationConfig> =
-  Object.fromEntries(
-    exampleList.map((item) => [item.key, item.navigation ?? {}])
-  ) as Record<ExampleKey, ExampleNavigationConfig>;
 
 export const appColors = [
   '#4fd1c5',
