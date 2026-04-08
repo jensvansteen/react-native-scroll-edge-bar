@@ -88,14 +88,7 @@ export function PrDetailScreen() {
       </ScrollView>
 
       <ScrollEdgeBar.BottomBar style={styles.bottomBar}>
-        <View
-          style={{
-            display: 'flex',
-            flexDirection: 'row',
-            gap: 10,
-            alignSelf: 'flex-end',
-          }}
-        >
+        <View style={styles.bottomActions}>
           <GlassButton
             title="Comment"
             icon="bubble.left"
@@ -473,8 +466,10 @@ const styles = StyleSheet.create({
   },
   bottomActions: {
     flexDirection: 'row',
+    gap: 10,
     justifyContent: 'flex-end',
     alignItems: 'center',
+    alignSelf: 'flex-end',
   },
   glassButton: {
     minHeight: 36,
