@@ -6,19 +6,22 @@ import {
   Text,
   View,
 } from 'react-native';
+import { router } from 'expo-router';
 import { SFSymbolView, SFSymbolWeight } from 'react-native-nitro-sfsymbols';
 import { exampleList } from '../data';
 
-export function ExampleMenuScreen({ navigation }: { navigation: any }) {
+export function ExampleMenuScreen() {
   return (
     <FlatList
       data={exampleList}
       keyExtractor={(item) => item.route}
       style={styles.menuList}
       contentContainerStyle={styles.menuContent}
+      contentInsetAdjustmentBehavior="automatic"
+      automaticallyAdjustsScrollIndicatorInsets
       renderItem={({ item }) => (
         <Pressable
-          onPress={() => navigation.push(item.route)}
+          onPress={() => router.push(item.route)}
           style={({ pressed }) => [
             styles.menuItem,
             pressed && styles.menuItemPressed,

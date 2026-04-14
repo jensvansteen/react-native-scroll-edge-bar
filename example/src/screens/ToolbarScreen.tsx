@@ -5,12 +5,20 @@ import {
   Text,
   View,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ScrollEdgeBar } from 'react-native-scroll-edge-bar';
 import { sharedStyles } from '../styles/shared';
 
 export function ToolbarScreen() {
+  const insets = useSafeAreaInsets();
+  const headerHeight = insets.top + 44;
+
   return (
-    <ScrollEdgeBar style={styles.container} estimatedBottomBarHeight={72}>
+    <ScrollEdgeBar
+      style={styles.container}
+      estimatedTopBarHeight={headerHeight}
+      estimatedBottomBarHeight={72}
+    >
       <ScrollView contentInsetAdjustmentBehavior="automatic">
         {Array.from({ length: 24 }).map((_, index) => (
           <View key={index} style={styles.toolbarCard}>

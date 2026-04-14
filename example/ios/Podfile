@@ -7,6 +7,12 @@ require Pod::Executable.execute_command('node', ['-p',
     {paths: [process.argv[1]]},
   )', __dir__]).strip
 
+require Pod::Executable.execute_command('node', ['-p',
+  'require.resolve(
+    "expo/scripts/autolinking.rb",
+    {paths: [process.argv[1]]},
+  )', __dir__]).strip
+
 platform :ios, min_ios_version_supported
 prepare_react_native_project!
 
@@ -51,6 +57,8 @@ if linkage != nil
 end
 
 target 'ScrollEdgeBarExample' do
+  use_expo_modules!
+
   config = use_native_modules!
 
   use_react_native!(

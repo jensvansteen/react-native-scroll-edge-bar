@@ -1,7 +1,14 @@
-import { ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, Text as RNText, View } from 'react-native';
 import SegmentedControl from '@react-native-segmented-control/segmented-control';
+import { Button, HStack, Host, Spacer, Text, Toggle } from '@expo/ui/swift-ui';
+import {
+  buttonStyle,
+  controlSize,
+  font,
+  foregroundStyle,
+  padding,
+} from '@expo/ui/swift-ui/modifiers';
 import { ScrollEdgeBar } from 'react-native-scroll-edge-bar';
-import { sharedStyles } from '../styles/shared';
 import { transitionColors } from '../data';
 
 export function TransitionShowcaseScreen() {
@@ -25,7 +32,7 @@ export function TransitionShowcaseScreen() {
             key={color.name}
             style={[styles.colorBlock, { backgroundColor: color.value }]}
           >
-            <Text
+            <RNText
               style={[
                 styles.colorBlockLabel,
                 index % 2 === 0
@@ -34,20 +41,34 @@ export function TransitionShowcaseScreen() {
               ]}
             >
               {color.name}
-            </Text>
+            </RNText>
           </View>
         ))}
       </ScrollView>
 
-      <ScrollEdgeBar.BottomBar style={styles.bottomBar}>
-        <View style={sharedStyles.actionBar}>
-          <Text style={sharedStyles.bottomLabel}>Test</Text>
-          <Switch value />
-          <View style={sharedStyles.spacer} />
-          <View style={sharedStyles.smallButton}>
-            <Text style={sharedStyles.smallButtonText}>Reset</Text>
-          </View>
-        </View>
+      <ScrollEdgeBar.BottomBar style={styles.bottomBarHost}>
+        <Host matchContents={{ vertical: true }} style={styles.bottomBarHost}>
+          <HStack
+            spacing={12}
+            alignment="center"
+            modifiers={[padding({ horizontal: 16, vertical: 12 })]}
+          >
+            <Text
+              modifiers={[
+                font({ size: 15, weight: 'semibold' }),
+                foregroundStyle({ type: 'hierarchical', style: 'primary' }),
+              ]}
+            >
+              Test
+            </Text>
+            <Toggle isOn />
+            <Spacer />
+            <Button
+              label="Reset"
+              modifiers={[buttonStyle('bordered'), controlSize('small')]}
+            />
+          </HStack>
+        </Host>
       </ScrollEdgeBar.BottomBar>
     </ScrollEdgeBar>
   );
@@ -62,10 +83,8 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     backgroundColor: 'transparent',
   },
-  bottomBar: {
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    backgroundColor: 'transparent',
+  bottomBarHost: {
+    width: '100%',
   },
   segmentedControl: {
     height: 32,

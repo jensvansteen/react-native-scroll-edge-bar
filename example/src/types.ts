@@ -1,21 +1,9 @@
-export type ExampleRouteName =
-  | 'AppStore'
-  | 'PullRequests'
-  | 'PrDetail'
-  | 'TransitionShowcase'
-  | 'Toolbar'
-  | 'SearchBar'
-  | 'TabAccessory'
-  | 'Calendar';
-
-export type RootStackParamList = {
-  Home: undefined;
-  AppStore: undefined;
-  PullRequests: undefined;
-  PrDetail: undefined;
-  TransitionShowcase: undefined;
-  Toolbar: undefined;
-  SearchBar: undefined;
-  TabAccessory: undefined;
-  Calendar: undefined;
-};
+export type ExampleRoutePath =
+  | '/app-store'
+  | '/pull-requests'
+  | '/pr-detail'
+  | '/transition-showcase'
+  | '/toolbar'
+  | '/search-bar'
+  | '/tab-accessory'
+  | '/calendar';

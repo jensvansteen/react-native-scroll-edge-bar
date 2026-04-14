@@ -1,4 +1,13 @@
 {
-  "name": "ScrollEdgeBarExample",
-  "displayName": "ScrollEdgeBarExample"
+  "expo": {
+    "name": "ScrollEdgeBarExample",
+    "slug": "scroll-edge-bar-example",
+    "scheme": "scrolledgebarexample",
+    "ios": {
+      "bundleIdentifier": "scrolledgebar.example"
+    },
+    "android": {
+      "package": "scrolledgebar.example"
+    }
+  }
 }

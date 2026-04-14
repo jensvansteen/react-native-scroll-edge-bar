@@ -174,6 +174,7 @@ class ScrollEdgeBarContainerView: UIView {
         return nil
     }
 
+
     private func findViewController() -> UIViewController? {
         // Find nearest VC via responder chain
         var responder: UIResponder? = self
@@ -313,6 +314,7 @@ class ScrollEdgeBarContainerView: UIView {
               let controller = edgeBarController as? ScrollEdgeBarController else { return }
         controller.setEdgeEffectStyles(top: topEdgeEffectStyle, bottom: bottomEdgeEffectStyle)
     }
+
 }
 
 // MARK: - ScrollEdgeBarController
@@ -416,7 +418,8 @@ final class ScrollEdgeBarController: UIViewController {
         let wrapperView = ScrollEdgeBarWrapperView(
             scrollView: scrollView,
             topBarContent: topContent,
-            bottomBarContent: bottomContent
+            bottomBarContent: bottomContent,
+            useAutomaticInsetAdjustment: false
         )
 
         let hosting = UIHostingController(rootView: wrapperView)
@@ -438,15 +441,18 @@ final class ScrollEdgeBarController: UIViewController {
         hostingController = hosting
         hosting.view.layoutIfNeeded()
         applyEdgeEffectStyles()
-        let estimatedInsets = UIEdgeInsets(
-            top: estimatedTopBarHeight + topBarOffset,
-            left: 0,
-            bottom: estimatedBottomBarHeight + bottomBarOffset,
-            right: 0
-        )
-        scrollView.contentInset = estimatedInsets
-        scrollView.verticalScrollIndicatorInsets = estimatedInsets
-        scrollView.contentOffset = CGPoint(x: 0, y: -estimatedInsets.top)
+        let useManualEstimatedInsets = true
+        if useManualEstimatedInsets {
+            let estimatedInsets = UIEdgeInsets(
+                top: estimatedTopBarHeight + topBarOffset,
+                left: 0,
+                bottom: estimatedBottomBarHeight + bottomBarOffset,
+                right: 0
+            )
+            scrollView.contentInset = estimatedInsets
+            scrollView.verticalScrollIndicatorInsets = estimatedInsets
+            scrollView.contentOffset = CGPoint(x: 0, y: -estimatedInsets.top)
+        }
         scrollView.alpha = 1
 
         DispatchQueue.main.async {
@@ -466,7 +472,8 @@ final class ScrollEdgeBarController: UIViewController {
         let wrapperView = ScrollEdgeBarWrapperView(
             scrollView: scrollView,
             topBarContent: makeBarContent(topBarView, estimatedHeight: estimatedTopBarHeight),
-            bottomBarContent: makeBarContent(bottomBarView, estimatedHeight: estimatedBottomBarHeight)
+            bottomBarContent: makeBarContent(bottomBarView, estimatedHeight: estimatedBottomBarHeight),
+            useAutomaticInsetAdjustment: false
         )
         hostingController?.rootView = wrapperView
 
@@ -612,6 +619,7 @@ final class ScrollEdgeBarController: UIViewController {
             parent.insertSubview(topBar, at: idx)
         }
         if let bottomBar = bottomBarView, let parent = bottomBarOriginalParent {
+            bottomBar.isHidden = false
             bottomBar.removeFromSuperview()
             let idx = min(bottomBarOriginalIndex, parent.subviews.count)
             parent.insertSubview(bottomBar, at: idx)
@@ -716,9 +724,13 @@ struct ScrollEdgeBarWrapperView: View {
     let scrollView: UIScrollView
     let topBarContent: AnyView?
     let bottomBarContent: AnyView?
+    let useAutomaticInsetAdjustment: Bool
 
     var body: some View {
-        let base = DirectScrollViewWrapper(scrollView: scrollView)
+        let base = DirectScrollViewWrapper(
+            scrollView: scrollView,
+            useAutomaticInsetAdjustment: useAutomaticInsetAdjustment
+        )
             .ignoresSafeArea(.all)
 
         applyBars(to: base)
@@ -771,15 +783,17 @@ struct ScrollEdgeBarWrapperView: View {
     }
 }
 
+
 @available(iOS 16.0, *)
 struct DirectScrollViewWrapper: UIViewRepresentable {
     let scrollView: UIScrollView
+    let useAutomaticInsetAdjustment: Bool
 
     func makeUIView(context: Context) -> UIView {
         let container = UIView()
 
         scrollView.translatesAutoresizingMaskIntoConstraints = false
-        scrollView.contentInsetAdjustmentBehavior = .never
+        scrollView.contentInsetAdjustmentBehavior = useAutomaticInsetAdjustment ? .automatic : .never
         scrollView.showsHorizontalScrollIndicator = false
         scrollView.alwaysBounceHorizontal = false
         scrollView.isDirectionalLockEnabled = true

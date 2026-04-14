@@ -24,7 +24,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     window = UIWindow(frame: UIScreen.main.bounds)
 
     factory.startReactNative(
-      withModuleName: "ScrollEdgeBarExample",
+      withModuleName: "main",
       in: window,
       launchOptions: launchOptions
     )
@@ -46,7 +46,7 @@ class ReactNativeDelegate: RCTDefaultReactNativeFactoryDelegate {
       provider.jsLocation = "127.0.0.1"
     #endif
 
-    return provider.jsBundleURL(forBundleRoot: "index")
+    return provider.jsBundleURL(forBundleRoot: "example/index")
 #else
     return Bundle.main.url(forResource: "main", withExtension: "jsbundle")
 #endif
