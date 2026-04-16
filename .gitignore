@@ -41,9 +41,11 @@ project.xcworkspace
 local.properties
 android.iml
 
-# Example app native directories (run `expo run:ios` to generate)
-example/ios/
+# Example app Android (iOS-only library)
 example/android/
+
+# Cocoapods
+example/ios/Pods
 
 # Ruby
 example/vendor/
@@ -79,3 +81,4 @@ android/generated
 
 # React Native Nitro Modules
 nitrogen/
+config.bat
