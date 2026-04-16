@@ -43,12 +43,6 @@ export const exampleList: Array<{
     symbol: 'magnifyingglass',
   },
   {
-    route: '/tab-accessory',
-    title: 'Tab Accessory',
-    subtitle: 'Large bottom accessory-style bar',
-    symbol: 'music.note.list',
-  },
-  {
     route: '/calendar',
     title: 'Calendar',
     subtitle: 'Week selector with stronger top bar',

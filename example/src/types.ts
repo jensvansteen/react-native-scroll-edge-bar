@@ -5,5 +5,4 @@ export type ExampleRoutePath =
   | '/transition-showcase'
   | '/toolbar'
   | '/search-bar'
-  | '/tab-accessory'
   | '/calendar';

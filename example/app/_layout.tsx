@@ -83,14 +83,6 @@ export default function RootLayout() {
             }}
           />
           <Stack.Screen
-            name="tab-accessory"
-            options={{
-              ...transparentHeaderOptions,
-              title: 'Tab Accessory',
-              headerLargeTitleEnabled: true,
-            }}
-          />
-          <Stack.Screen
             name="calendar"
             options={{
               ...transparentHeaderOptions,
