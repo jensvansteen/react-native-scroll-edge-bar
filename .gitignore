@@ -41,9 +41,9 @@ project.xcworkspace
 local.properties
 android.iml
 
-# Cocoapods
-#
-example/ios/Pods
+# Example app native directories (run `expo run:ios` to generate)
+example/ios/
+example/android/
 
 # Ruby
 example/vendor/
@@ -55,11 +55,6 @@ npm-debug.log
 yarn-debug.log
 yarn-error.log
 
-# BUCK
-buck-out/
-\.buckd/
-android/app/libs
-android/keystores/debug.keystore
 
 # Yarn
 .yarn/*
