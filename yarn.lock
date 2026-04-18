@@ -7473,6 +7473,19 @@ __metadata:
   languageName: node
   linkType: hard
 
+"expo-build-properties@npm:~55.0.13":
+  version: 55.0.13
+  resolution: "expo-build-properties@npm:55.0.13"
+  dependencies:
+    "@expo/schema-utils": "npm:^55.0.3"
+    resolve-from: "npm:^5.0.0"
+    semver: "npm:^7.6.0"
+  peerDependencies:
+    expo: "*"
+  checksum: 10c0/e1ac68d92d37931d26943642720253b37c250c4ddd1c290fa0bdaa4e2d0102aeaf45b7e469a02c43f4dd4aaa47c8b8a2fd828dde8d511fdd7d1cd6cae330b7bc
+  languageName: node
+  linkType: hard
+
 "expo-constants@npm:^55.0.14, expo-constants@npm:~55.0.14":
   version: 55.0.14
   resolution: "expo-constants@npm:55.0.14"
@@ -12662,6 +12675,7 @@ __metadata:
     "@types/react-refresh": "npm:^0"
     babel-preset-expo: "npm:^55.0.17"
     expo: "npm:^55.0.15"
+    expo-build-properties: "npm:~55.0.13"
     expo-constants: "npm:^55.0.14"
     expo-dev-client: "npm:^55.0.27"
     expo-linking: "npm:^55.0.13"
@@ -12676,11 +12690,12 @@ __metadata:
     react-native-nitro-sfsymbols: "npm:^1.2.0"
     react-native-safe-area-context: "npm:^5.6.2"
     react-native-screens: "npm:^4.22.0"
+    react-native-scroll-edge-bar: "workspace:*"
     react-refresh: "npm:^0.18.0"
   languageName: unknown
   linkType: soft
 
-"react-native-scroll-edge-bar@workspace:.":
+"react-native-scroll-edge-bar@workspace:*, react-native-scroll-edge-bar@workspace:.":
   version: 0.0.0-use.local
   resolution: "react-native-scroll-edge-bar@workspace:."
   dependencies:
@@ -12704,8 +12719,6 @@ __metadata:
     react: "npm:19.2.0"
     react-native: "npm:0.83.0"
     react-native-builder-bob: "npm:^0.40.13"
-    react-native-safe-area-context: "npm:^5.6.2"
-    react-native-screens: "npm:^4.22.0"
     release-it: "npm:^19.0.4"
     turbo: "npm:^2.5.6"
     typescript: "npm:^5.9.2"
