@@ -13,6 +13,12 @@ export const exampleList: Array<{
     symbol: 'bag',
   },
   {
+    route: '/app-store?glass=false',
+    title: 'App Store (No Glass)',
+    subtitle: 'Same screen with prefersGlassEffect disabled',
+    symbol: 'bag.badge.minus',
+  },
+  {
     route: '/pull-requests',
     title: 'Pull Requests',
     subtitle: 'Filter chips with large title',

@@ -7,47 +7,64 @@ import {
   View,
 } from 'react-native';
 import SegmentedControl from '@react-native-segmented-control/segmented-control';
+import { Stack, useLocalSearchParams } from 'expo-router';
 import { ScrollEdgeBar } from 'react-native-scroll-edge-bar';
 import { sharedStyles } from '../src/styles/shared';
 import { appColors } from '../src/data';
 
 export default function AppStoreScreen() {
-  return (
-    <ScrollEdgeBar style={styles.container} estimatedTopBarHeight={48}>
-      <ScrollEdgeBar.TopBar style={styles.topBar}>
-        <SegmentedControl
-          values={['Free Apps', 'Freemium Apps']}
-          selectedIndex={0}
-          style={styles.segmentedControl}
-        />
-      </ScrollEdgeBar.TopBar>
+  const { glass } = useLocalSearchParams<{ glass?: string }>();
+  const prefersGlassEffect = glass !== 'false';
 
-      <ScrollView contentInsetAdjustmentBehavior="automatic">
-        <View style={styles.screenBackground}>
-          {Array.from({ length: 16 }).map((_, index) => (
-            <View key={index} style={styles.listCard}>
-              <View
-                style={[
-                  styles.appIcon,
-                  { backgroundColor: appColors[index % appColors.length] },
-                ]}
-              />
-              <View style={styles.appTextColumn}>
-                <Text style={sharedStyles.cardTitle}>App {index + 1}</Text>
-                <Text style={sharedStyles.cardSubtitle}>
-                  Top downloaded this week
-                </Text>
+  return (
+    <>
+      <Stack.Screen
+        options={{
+          title: prefersGlassEffect
+            ? 'App Store Listing'
+            : 'App Store (No Glass)',
+        }}
+      />
+      <ScrollEdgeBar
+        style={styles.container}
+        estimatedTopBarHeight={48}
+        prefersGlassEffect={prefersGlassEffect}
+      >
+        <ScrollEdgeBar.TopBar style={styles.topBar}>
+          <SegmentedControl
+            values={['Free Apps', 'Freemium Apps']}
+            selectedIndex={0}
+            style={styles.segmentedControl}
+          />
+        </ScrollEdgeBar.TopBar>
+
+        <ScrollView contentInsetAdjustmentBehavior="automatic">
+          <View style={styles.screenBackground}>
+            {Array.from({ length: 16 }).map((_, index) => (
+              <View key={index} style={styles.listCard}>
+                <View
+                  style={[
+                    styles.appIcon,
+                    { backgroundColor: appColors[index % appColors.length] },
+                  ]}
+                />
+                <View style={styles.appTextColumn}>
+                  <Text style={sharedStyles.cardTitle}>App {index + 1}</Text>
+                  <Text style={sharedStyles.cardSubtitle}>
+                    Top downloaded this week
+                  </Text>
+                </View>
+                <View style={sharedStyles.badgeButton}>
+                  <Text style={sharedStyles.badgeButtonText}>
+                    {index % 4 === 0 ? 'GET' : 'OPEN'}
+                  </Text>
+                </View>
               </View>
-              <View style={sharedStyles.badgeButton}>
-                <Text style={sharedStyles.badgeButtonText}>
-                  {index % 4 === 0 ? 'GET' : 'OPEN'}
-                </Text>
-              </View>
-            </View>
-          ))}
-        </View>
-      </ScrollView>
-    </ScrollEdgeBar>
+            ))}
+          </View>
+        </ScrollView>
+      </ScrollEdgeBar>
+    </>
   );
 }
 
