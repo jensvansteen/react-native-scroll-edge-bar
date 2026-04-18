@@ -1,55 +1,55 @@
-import type { ExampleRouteName } from './types';
+import type { ExampleRoutePath } from './types';
 
 export const exampleList: Array<{
-  route: ExampleRouteName;
+  route: ExampleRoutePath;
   title: string;
   subtitle: string;
   symbol: string;
 }> = [
   {
-    route: 'AppStore',
+    route: '/app-store',
     title: 'App Store Listing',
     subtitle: 'Segmented control top bar',
     symbol: 'bag',
   },
   {
-    route: 'PullRequests',
+    route: '/app-store?glass=false',
+    title: 'App Store (No Glass)',
+    subtitle: 'Same screen with prefersGlassEffect disabled',
+    symbol: 'bag.badge.minus',
+  },
+  {
+    route: '/pull-requests',
     title: 'Pull Requests',
     subtitle: 'Filter chips with large title',
     symbol: 'arrow.triangle.pull',
   },
   {
-    route: 'PrDetail',
+    route: '/pr-detail',
     title: 'PR Detail',
     subtitle: 'Review banner + action buttons',
     symbol: 'text.page.badge.magnifyingglass',
   },
   {
-    route: 'TransitionShowcase',
+    route: '/transition-showcase',
     title: 'Transition Showcase',
     subtitle: 'Top and bottom bars over color blocks',
     symbol: 'paintpalette',
   },
   {
-    route: 'Toolbar',
+    route: '/toolbar',
     title: 'Toolbar',
     subtitle: 'Bottom edge bar emphasis',
     symbol: 'hammer',
   },
   {
-    route: 'SearchBar',
+    route: '/search-bar',
     title: 'Search Bar',
     subtitle: 'Search-like screen with segmented top bar',
     symbol: 'magnifyingglass',
   },
   {
-    route: 'TabAccessory',
-    title: 'Tab Accessory',
-    subtitle: 'Large bottom accessory-style bar',
-    symbol: 'music.note.list',
-  },
-  {
-    route: 'Calendar',
+    route: '/calendar',
     title: 'Calendar',
     subtitle: 'Week selector with stronger top bar',
     symbol: 'calendar',

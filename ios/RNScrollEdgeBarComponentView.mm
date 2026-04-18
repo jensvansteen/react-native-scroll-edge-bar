@@ -14,8 +14,7 @@
 - (void)setScrollView:(UIView *)view;
 @property (nonatomic, assign) CGFloat estimatedTopBarHeight;
 @property (nonatomic, assign) CGFloat estimatedBottomBarHeight;
-@property (nonatomic, assign) CGFloat topBarOffset;
-@property (nonatomic, assign) CGFloat bottomBarOffset;
+@property (nonatomic, assign) BOOL prefersGlassEffect;
 @property (nonatomic, copy) NSString *topEdgeEffectStyle;
 @property (nonatomic, copy) NSString *bottomEdgeEffectStyle;
 @end
@@ -81,8 +80,7 @@ static NSString *RCTNSStringFromBottomEdgeEffectStyle(
 
   view.estimatedTopBarHeight = newProps.estimatedTopBarHeight;
   view.estimatedBottomBarHeight = newProps.estimatedBottomBarHeight;
-  view.topBarOffset = newProps.topBarOffset;
-  view.bottomBarOffset = newProps.bottomBarOffset;
+  view.prefersGlassEffect = newProps.prefersGlassEffect;
   view.topEdgeEffectStyle = RCTNSStringFromTopEdgeEffectStyle(newProps.topEdgeEffectStyle);
   view.bottomEdgeEffectStyle = RCTNSStringFromBottomEdgeEffectStyle(newProps.bottomEdgeEffectStyle);
 

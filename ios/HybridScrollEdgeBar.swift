@@ -1,5 +1,6 @@
 import UIKit
 import SwiftUI
+import ScrollEdgeBar
 
 // MARK: - Marker Views
 
@@ -16,14 +17,9 @@ class ScrollEdgeBarBottomBarView: UIView {}
 @objc(ScrollEdgeBarContainerView)
 @objcMembers
 class ScrollEdgeBarContainerView: UIView {
-    var estimatedTopBarHeight: CGFloat = 60
-    var estimatedBottomBarHeight: CGFloat = 60
-    var topBarOffset: CGFloat = 0 {
-        didSet { offsetsDidChange() }
-    }
-    var bottomBarOffset: CGFloat = 0 {
-        didSet { offsetsDidChange() }
-    }
+    var estimatedTopBarHeight: CGFloat = 0
+    var estimatedBottomBarHeight: CGFloat = 0
+    var prefersGlassEffect: Bool = true
     var topEdgeEffectStyle: String = "automatic" {
         didSet { edgeEffectStylesDidChange() }
     }
@@ -38,24 +34,9 @@ class ScrollEdgeBarContainerView: UIView {
     private var detectedBottomBarView: UIView?
     private var detectedScrollView: UIScrollView?
     private var didAttachControllerView = false
-    private var didNotifyOffsets: Bool = false
 
     override func point(inside point: CGPoint, with event: UIEvent?) -> Bool {
         return false
-    }
-
-    override func didAddSubview(_ subview: UIView) {
-        super.didAddSubview(subview)
-        detectChildViews()
-    }
-
-    override func willRemoveSubview(_ subview: UIView) {
-        super.willRemoveSubview(subview)
-        if subview === detectedTopBarView {
-            detectedTopBarView = nil
-        } else if subview === detectedBottomBarView {
-            detectedBottomBarView = nil
-        }
     }
 
     override func didMoveToWindow() {
@@ -69,7 +50,6 @@ class ScrollEdgeBarContainerView: UIView {
     override func layoutSubviews() {
         super.layoutSubviews()
 
-        // React Native may mount children after the container enters the hierarchy.
         if detectedScrollView == nil || detectedTopBarView == nil || detectedBottomBarView == nil {
             detectChildViews()
         }
@@ -80,8 +60,6 @@ class ScrollEdgeBarContainerView: UIView {
     }
 
     private func detectChildViews() {
-        // In Fabric, React children are siblings of this view inside the
-        // component wrapper, not direct subviews of the container.
         let searchViews = superview?.subviews ?? subviews
         for subview in searchViews where subview !== self {
             if detectedTopBarView == nil,
@@ -175,7 +153,6 @@ class ScrollEdgeBarContainerView: UIView {
     }
 
     private func findViewController() -> UIViewController? {
-        // Find nearest VC via responder chain
         var responder: UIResponder? = self
         var nearestVC: UIViewController?
         while let nextResponder = responder?.next {
@@ -188,8 +165,6 @@ class ScrollEdgeBarContainerView: UIView {
 
         guard let startVC = nearestVC else { return nil }
 
-        // Prefer the direct child of the nearest system container so safe-area
-        // propagation and scroll-edge behavior come from the correct owner.
         var candidate = startVC
         while let parentVC = candidate.parent {
             if parentVC is UITabBarController {
@@ -204,45 +179,12 @@ class ScrollEdgeBarContainerView: UIView {
         return startVC
     }
 
-    private func findBestScrollView(in root: UIView?) -> UIScrollView? {
-        guard let root = root else { return nil }
-        var best: UIScrollView?
-        var bestArea: CGFloat = 0
-        let containerFrame = convert(bounds, to: root)
-
-        func visit(_ view: UIView) {
-            if let scrollView = view as? UIScrollView {
-                let frameInRoot = scrollView.convert(scrollView.bounds, to: root)
-                let intersection = frameInRoot.intersection(containerFrame)
-                let area = intersection.width * intersection.height
-                let scrollable = scrollView.contentSize.height > scrollView.bounds.height + 1
-                if scrollable && area > bestArea {
-                    bestArea = area
-                    best = scrollView
-                }
-            }
-            for sub in view.subviews {
-                visit(sub)
-            }
-        }
-
-        visit(root)
-        return best
-    }
-
     private func trySetup() {
         guard !isSetup,
-              let parent = parentViewController else { return }
-
-        if detectedScrollView == nil {
-            if let candidate = findBestScrollView(in: parent.view) {
-                detectedScrollView = candidate
-            }
-        }
-
-        guard let scrollView = detectedScrollView else {
-            DispatchQueue.main.async {
-                self.detectChildViews()
+              let parent = parentViewController,
+              let scrollView = detectedScrollView else {
+            if !isSetup && detectedScrollView == nil {
+                DispatchQueue.main.async { self.detectChildViews() }
             }
             return
         }
@@ -250,11 +192,9 @@ class ScrollEdgeBarContainerView: UIView {
         isSetup = true
 
         if #available(iOS 16.0, *) {
-            let controller = ScrollEdgeBarController(scrollView: scrollView)
+            let controller = RNScrollEdgeBarController(scrollView: scrollView, prefersGlassEffect: prefersGlassEffect)
             controller.estimatedTopBarHeight = estimatedTopBarHeight
             controller.estimatedBottomBarHeight = estimatedBottomBarHeight
-            controller.setOffsets(top: topBarOffset, bottom: bottomBarOffset)
-            controller.setEdgeEffectStyles(top: topEdgeEffectStyle, bottom: bottomEdgeEffectStyle)
 
             if let topBarView = detectedTopBarView {
                 controller.setTopBar(topBarView)
@@ -263,16 +203,17 @@ class ScrollEdgeBarContainerView: UIView {
                 controller.setBottomBar(bottomBarView)
             }
 
-            let containerVC = parent
-            containerVC.addChild(controller)
+            applyEdgeEffectStyles(to: scrollView)
+
+            parent.addChild(controller)
 
             if !didAttachControllerView {
                 didAttachControllerView = true
-                guard let hostView = containerVC.view else { return }
+                guard let hostView = parent.view else { return }
                 controller.view.frame = hostView.bounds
                 controller.view.autoresizingMask = [.flexibleWidth, .flexibleHeight]
                 hostView.addSubview(controller.view)
-                controller.didMove(toParent: containerVC)
+                controller.didMove(toParent: parent)
             }
 
             edgeBarController = controller
@@ -286,209 +227,20 @@ class ScrollEdgeBarContainerView: UIView {
 
     private func cleanupController() {
         if #available(iOS 16.0, *),
-           let controller = edgeBarController as? ScrollEdgeBarController {
-            controller.cleanup()
+           let controller = edgeBarController as? RNScrollEdgeBarController {
+            controller.fabricCleanup()
         }
         edgeBarController = nil
         isSetup = false
         didAttachControllerView = false
     }
 
-    private func offsetsDidChange() {
-        guard #available(iOS 16.0, *),
-              let controller = edgeBarController as? ScrollEdgeBarController else { return }
-        if !didNotifyOffsets {
-            didNotifyOffsets = true
-            DispatchQueue.main.async {
-                self.didNotifyOffsets = false
-                controller.setOffsets(top: self.topBarOffset, bottom: self.bottomBarOffset)
-            }
-        } else {
-            controller.setOffsets(top: topBarOffset, bottom: bottomBarOffset)
-        }
-    }
-
     private func edgeEffectStylesDidChange() {
-        guard #available(iOS 16.0, *),
-              let controller = edgeBarController as? ScrollEdgeBarController else { return }
-        controller.setEdgeEffectStyles(top: topEdgeEffectStyle, bottom: bottomEdgeEffectStyle)
-    }
-}
-
-// MARK: - ScrollEdgeBarController
-
-@available(iOS 16.0, *)
-final class ScrollEdgeBarController: UIViewController {
-
-    let scrollView: UIScrollView
-    var estimatedTopBarHeight: CGFloat = 60
-    var estimatedBottomBarHeight: CGFloat = 60
-    var topBarOffset: CGFloat = 0
-    var bottomBarOffset: CGFloat = 0
-    var topEdgeEffectStyle: String = "automatic"
-    var bottomEdgeEffectStyle: String = "automatic"
-    private var topBarView: UIView?
-    private var bottomBarView: UIView?
-    private var hostingController: UIHostingController<ScrollEdgeBarWrapperView>?
-    private var didSetup = false
-    private var lastTopInset: CGFloat = 0
-    private var lastBottomInset: CGFloat = 0
-    private var displayLink: CADisplayLink?
-
-    // Original parents and indices for teardown restore.
-    private weak var scrollViewOriginalParent: UIView?
-    private var scrollViewOriginalIndex: Int = 0
-    private weak var topBarOriginalParent: UIView?
-    private var topBarOriginalIndex: Int = 0
-    private weak var bottomBarOriginalParent: UIView?
-    private var bottomBarOriginalIndex: Int = 0
-
-    init(scrollView: UIScrollView) {
-        self.scrollView = scrollView
-        super.init(nibName: nil, bundle: nil)
+        applyEdgeEffectStyles(to: detectedScrollView)
     }
 
-    required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
-    }
-
-    override func loadView() {
-        view = PassthroughView()
-    }
-
-    func setTopBar(_ view: UIView) {
-        if topBarOriginalParent == nil, let parent = view.superview {
-            topBarOriginalParent = parent
-            topBarOriginalIndex = parent.subviews.firstIndex(of: view) ?? 0
-        }
-        topBarView = view
-        updateHostingControllerIfNeeded()
-    }
-
-    func setBottomBar(_ view: UIView) {
-        if bottomBarOriginalParent == nil, let parent = view.superview {
-            bottomBarOriginalParent = parent
-            bottomBarOriginalIndex = parent.subviews.firstIndex(of: view) ?? 0
-        }
-        bottomBarView = view
-        updateHostingControllerIfNeeded()
-    }
-
-    override func viewDidLoad() {
-        super.viewDidLoad()
-        view.backgroundColor = .clear
-        scrollView.alpha = 0
-    }
-
-    override func viewWillDisappear(_ animated: Bool) {
-        super.viewWillDisappear(animated)
-        stopDisplayLink()
-    }
-
-    override func viewDidAppear(_ animated: Bool) {
-        super.viewDidAppear(animated)
-        if didSetup {
-            startDisplayLink()
-        }
-    }
-
-    override func viewDidLayoutSubviews() {
-        super.viewDidLayoutSubviews()
-        guard !didSetup else { return }
-        didSetup = true
-        setupHostingController()
-    }
-
-    private func makeBarContent(_ uiView: UIView?, estimatedHeight: CGFloat) -> AnyView? {
-        guard let uiView else { return nil }
-        return AnyView(BarViewWrapper(barView: uiView, estimatedHeight: estimatedHeight))
-    }
-
-    private func setupHostingController() {
-        if let parent = scrollView.superview {
-            scrollViewOriginalParent = parent
-            scrollViewOriginalIndex = parent.subviews.firstIndex(of: scrollView) ?? 0
-        }
-        scrollView.removeFromSuperview()
-
-        let topContent = makeBarContent(topBarView, estimatedHeight: estimatedTopBarHeight)
-        let bottomContent = makeBarContent(bottomBarView, estimatedHeight: estimatedBottomBarHeight)
-        let wrapperView = ScrollEdgeBarWrapperView(
-            scrollView: scrollView,
-            topBarContent: topContent,
-            bottomBarContent: bottomContent
-        )
-
-        let hosting = UIHostingController(rootView: wrapperView)
-        hosting.view.backgroundColor = .clear
-        hosting.view.isUserInteractionEnabled = true
-
-        addChild(hosting)
-        view.addSubview(hosting.view)
-        hosting.view.translatesAutoresizingMaskIntoConstraints = false
-
-        NSLayoutConstraint.activate([
-            hosting.view.topAnchor.constraint(equalTo: view.topAnchor),
-            hosting.view.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            hosting.view.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            hosting.view.bottomAnchor.constraint(equalTo: view.bottomAnchor)
-        ])
-
-        hosting.didMove(toParent: self)
-        hostingController = hosting
-        hosting.view.layoutIfNeeded()
-        applyEdgeEffectStyles()
-        let estimatedInsets = UIEdgeInsets(
-            top: estimatedTopBarHeight + topBarOffset,
-            left: 0,
-            bottom: estimatedBottomBarHeight + bottomBarOffset,
-            right: 0
-        )
-        scrollView.contentInset = estimatedInsets
-        scrollView.verticalScrollIndicatorInsets = estimatedInsets
-        scrollView.contentOffset = CGPoint(x: 0, y: -estimatedInsets.top)
-        scrollView.alpha = 1
-
-        DispatchQueue.main.async {
-            if #available(iOS 26.0, *) {
-                // In the RN containment hierarchy, navigation tracking does not
-                // get inferred automatically. Register the real wrapped scroll view.
-                self.parent?.setContentScrollView(self.scrollView, for: .top)
-            }
-            self.applyInsets()
-            self.startDisplayLink()
-        }
-    }
-
-    private func updateHostingControllerIfNeeded() {
-        guard didSetup else { return }
-
-        let wrapperView = ScrollEdgeBarWrapperView(
-            scrollView: scrollView,
-            topBarContent: makeBarContent(topBarView, estimatedHeight: estimatedTopBarHeight),
-            bottomBarContent: makeBarContent(bottomBarView, estimatedHeight: estimatedBottomBarHeight)
-        )
-        hostingController?.rootView = wrapperView
-
-        DispatchQueue.main.async {
-            self.applyInsets()
-        }
-    }
-
-    func setOffsets(top: CGFloat, bottom: CGFloat) {
-        topBarOffset = top
-        bottomBarOffset = bottom
-        updateHostingControllerIfNeeded()
-    }
-
-    func setEdgeEffectStyles(top: String, bottom: String) {
-        topEdgeEffectStyle = top
-        bottomEdgeEffectStyle = bottom
-        applyEdgeEffectStyles()
-    }
-
-    private func applyEdgeEffectStyles() {
-        guard #available(iOS 26.0, *) else { return }
+    private func applyEdgeEffectStyles(to scrollView: UIScrollView?) {
+        guard #available(iOS 26.0, *), let scrollView else { return }
         scrollView.topEdgeEffect.style = mapEdgeEffectStyle(topEdgeEffectStyle)
         scrollView.bottomEdgeEffect.style = mapEdgeEffectStyle(bottomEdgeEffectStyle)
     }
@@ -496,104 +248,116 @@ final class ScrollEdgeBarController: UIViewController {
     @available(iOS 26.0, *)
     private func mapEdgeEffectStyle(_ style: String) -> UIScrollEdgeEffect.Style {
         switch style.lowercased() {
-        case "hard":
-            return .hard
-        case "soft":
-            return .soft
-        default:
-            return .automatic
+        case "hard": return .hard
+        case "soft": return .soft
+        default: return .automatic
         }
     }
+}
 
-    private func applyInsets() {
-        let (topInset, bottomInset) = findEdgeBarInsets()
-        let adjustedTop = topInset + topBarOffset
-        let adjustedBottom = bottomInset + bottomBarOffset
+// MARK: - PassthroughView
 
-        lastTopInset = adjustedTop
-        lastBottomInset = adjustedBottom
+// Forwards touches to subviews, passes through anything that lands on the
+// view itself with no subview hit - so RN UI behind the overlay is not blocked.
+final class PassthroughView: UIView {
+    override func hitTest(_ point: CGPoint, with event: UIEvent?) -> UIView? {
+        let result = super.hitTest(point, with: event)
+        return result === self ? nil : result
+    }
+}
 
-        scrollView.contentInset = UIEdgeInsets(top: adjustedTop, left: 0, bottom: adjustedBottom, right: 0)
-        scrollView.verticalScrollIndicatorInsets = UIEdgeInsets(top: adjustedTop, left: 0, bottom: adjustedBottom, right: 0)
-        scrollView.contentOffset = CGPoint(x: 0, y: -adjustedTop)
+// MARK: - RNScrollEdgeBarController
+
+/// Subclass of `ScrollEdgeBarController` that integrates with React Native Fabric.
+///
+/// Responsibilities on top of the base class:
+/// - `BarViewWrapper` with RN-specific sizing (uses Fabric-laid-out height first).
+/// - Tracks bar view and scroll view original parents so `fabricCleanup()` can
+///   restore them to the Fabric hierarchy before the framework tears it down.
+@available(iOS 16.0, *)
+final class RNScrollEdgeBarController: ScrollEdgeBarController {
+
+    // MARK: - Fabric restore state
+
+    private var rnTopBarView: UIView?
+    private var rnBottomBarView: UIView?
+    private let topSlotHostView = ScrollEdgeBarSlotHostView()
+    private let bottomSlotHostView = ScrollEdgeBarSlotHostView()
+    private var adoptedViewControllers: [UIViewController] = []
+    private weak var topBarOriginalParent: UIView?
+    private var topBarOriginalIndex: Int = 0
+    private weak var bottomBarOriginalParent: UIView?
+    private var bottomBarOriginalIndex: Int = 0
+    private weak var rnScrollViewOriginalParent: UIView?
+    private var rnScrollViewOriginalIndex: Int = 0
+
+    // MARK: - Overrides
+
+    override func loadView() {
+        view = PassthroughView()
     }
 
-    private func startDisplayLink() {
-        guard displayLink == nil else { return }
-        let link = CADisplayLink(target: self, selector: #selector(displayLinkFired))
-        link.add(to: .main, forMode: .common)
-        displayLink = link
+    /// Capture the scroll view's Fabric parent before `setupHostingController`
+    /// reparents it into SwiftUI. `viewDidLoad` fires after `addChild` but
+    /// before `viewDidLayoutSubviews`, so the scroll view is still in place.
+    override func viewDidLoad() {
+        rnScrollViewOriginalParent = scrollView.superview
+        rnScrollViewOriginalIndex = scrollView.superview?.subviews.firstIndex(of: scrollView) ?? 0
+        super.viewDidLoad()
     }
 
-    private func stopDisplayLink() {
-        displayLink?.invalidate()
-        displayLink = nil
-    }
-
-    @objc private func displayLinkFired() {
-        let (topInset, bottomInset) = findEdgeBarInsets()
-        let adjustedTop = topInset + topBarOffset
-        let adjustedBottom = bottomInset + bottomBarOffset
-
-        guard adjustedTop != lastTopInset || adjustedBottom != lastBottomInset else { return }
-
-        lastTopInset = adjustedTop
-        lastBottomInset = adjustedBottom
-
-        let newInsets = UIEdgeInsets(top: adjustedTop, left: 0, bottom: adjustedBottom, right: 0)
-        UIView.animate(withDuration: 0.3, delay: 0, options: [.beginFromCurrentState, .curveEaseInOut]) {
-            self.scrollView.contentInset = newInsets
-            self.scrollView.verticalScrollIndicatorInsets = newInsets
+    override func setTopBar(_ view: UIView) {
+        if topBarOriginalParent == nil, let parent = view.superview {
+            topBarOriginalParent = parent
+            topBarOriginalIndex = parent.subviews.firstIndex(of: view) ?? 0
         }
+        rnTopBarView = view
+        topSlotHostView.setContentView(view)
+        super.setTopBar(topSlotHostView)
     }
 
-    private func findEdgeBarInsets() -> (top: CGFloat, bottom: CGFloat) {
-        guard let rootView = navigationController?.view ?? view.window?.rootViewController?.view else {
-            return (estimatedTopBarHeight, estimatedBottomBarHeight)
+    override func setBottomBar(_ view: UIView) {
+        if bottomBarOriginalParent == nil, let parent = view.superview {
+            bottomBarOriginalParent = parent
+            bottomBarOriginalIndex = parent.subviews.firstIndex(of: view) ?? 0
         }
-
-        var topInset: CGFloat = estimatedTopBarHeight
-        var bottomInset: CGFloat = estimatedBottomBarHeight
-        let screenHeight = view.bounds.height
-
-        findEdgeBarViews(in: rootView) { barView in
-            let frameInWindow = barView.convert(barView.bounds, to: nil)
-
-            if frameInWindow.origin.y < screenHeight / 2 {
-                topInset = frameInWindow.maxY
-            }
-
-            if frameInWindow.maxY > screenHeight / 2 {
-                bottomInset = screenHeight - frameInWindow.minY
-            }
-        }
-
-        return (topInset, bottomInset)
+        rnBottomBarView = view
+        bottomSlotHostView.setContentView(view)
+        super.setBottomBar(bottomSlotHostView)
     }
 
-    private func findEdgeBarViews(in view: UIView, handler: (UIView) -> Void) {
-        for interaction in view.interactions {
-            let className = String(describing: type(of: interaction))
-            if className.contains("ScrollPocketBarInteraction") {
-                handler(view)
-                return
-            }
-        }
-
-        for subview in view.subviews {
-            findEdgeBarViews(in: subview, handler: handler)
-        }
+    override func makeBarContent(for uiView: UIView?) -> AnyView? {
+        guard let uiView else { return nil }
+        let estimated = uiView === topSlotHostView ? estimatedTopBarHeight : estimatedBottomBarHeight
+        let measuredView = uiView === topSlotHostView ? topBarOriginalParent : bottomBarOriginalParent
+        return AnyView(BarViewWrapper(
+            barView: uiView,
+            measuredView: measuredView,
+            estimatedHeight: estimated
+        ))
     }
 
-    /// Restore all reparented views to their original parents so Fabric unmount
-    /// finds the expected hierarchy.
-    func cleanup() {
-        hostingController?.willMove(toParent: nil)
-        hostingController?.view.removeFromSuperview()
-        hostingController?.removeFromParent()
-        hostingController = nil
-        didSetup = false
-        stopDisplayLink()
+    // MARK: - Fabric teardown
+
+    /// Restores all reparented views to their Fabric parents and removes this
+    /// controller. `beginAppearanceTransition(false:)` fires `viewWillDisappear`
+    /// inside the package, which stops the display link without needing to expose
+    /// any private state.
+    func fabricCleanup() {
+        topSlotHostView.setContentView(nil)
+        bottomSlotHostView.setContentView(nil)
+
+        if let topBar = rnTopBarView, let parent = topBarOriginalParent {
+            topBar.removeFromSuperview()
+            let idx = min(topBarOriginalIndex, parent.subviews.count)
+            parent.insertSubview(topBar, at: idx)
+        }
+        if let bottomBar = rnBottomBarView, let parent = bottomBarOriginalParent {
+            bottomBar.isHidden = false
+            bottomBar.removeFromSuperview()
+            let idx = min(bottomBarOriginalIndex, parent.subviews.count)
+            parent.insertSubview(bottomBar, at: idx)
+        }
 
         scrollView.removeFromSuperview()
         scrollView.isScrollEnabled = true
@@ -601,20 +365,9 @@ final class ScrollEdgeBarController: UIViewController {
         scrollView.showsVerticalScrollIndicator = true
         scrollView.showsHorizontalScrollIndicator = true
         scrollView.alpha = 1
-        if let parent = scrollViewOriginalParent {
-            let idx = min(scrollViewOriginalIndex, parent.subviews.count)
+        if let parent = rnScrollViewOriginalParent {
+            let idx = min(rnScrollViewOriginalIndex, parent.subviews.count)
             parent.insertSubview(scrollView, at: idx)
-        }
-
-        if let topBar = topBarView, let parent = topBarOriginalParent {
-            topBar.removeFromSuperview()
-            let idx = min(topBarOriginalIndex, parent.subviews.count)
-            parent.insertSubview(topBar, at: idx)
-        }
-        if let bottomBar = bottomBarView, let parent = bottomBarOriginalParent {
-            bottomBar.removeFromSuperview()
-            let idx = min(bottomBarOriginalIndex, parent.subviews.count)
-            parent.insertSubview(bottomBar, at: idx)
         }
 
         if #available(iOS 26.0, *) {
@@ -622,44 +375,24 @@ final class ScrollEdgeBarController: UIViewController {
         }
 
         willMove(toParent: nil)
+        beginAppearanceTransition(false, animated: false)
         view.removeFromSuperview()
+        endAppearanceTransition()
         removeFromParent()
     }
 }
 
+// MARK: - BarViewWrapper
 
-// Allows hit-testing only on actual subviews (e.g. the bars).
-final class PassthroughView: UIView {
-    override func hitTest(_ point: CGPoint, with event: UIEvent?) -> UIView? {
-        for subview in subviews {
-            let converted = subview.convert(point, from: self)
-            guard subview.point(inside: converted, with: event) else { continue }
-            if hasScrollPocketInteraction(in: subview) {
-                return subview.hitTest(converted, with: event)
-            }
-        }
-        return nil
-    }
-
-    private func hasScrollPocketInteraction(in view: UIView) -> Bool {
-        for interaction in view.interactions {
-            let className = String(describing: type(of: interaction))
-            if className.contains("ScrollPocketBarInteraction") {
-                return true
-            }
-        }
-        for subview in view.subviews {
-            if hasScrollPocketInteraction(in: subview) { return true }
-        }
-        return false
-    }
-}
-
-// MARK: - SwiftUI Views
-
+/// React Native-specific bar content wrapper. Unlike the package's default
+/// `BarViewWrapper`, this version:
+/// - Uses autoresizing mask for Fabric marker views (whose frames are set by RN layout)
+/// - Reports the RN-laid-out `barView.bounds.height` before falling back to
+///   `estimatedHeight` or `systemLayoutSizeFitting`.
 @available(iOS 16.0, *)
 struct BarViewWrapper: UIViewRepresentable {
     let barView: UIView
+    weak var measuredView: UIView?
     let estimatedHeight: CGFloat
 
     func makeUIView(context: Context) -> UIView {
@@ -688,7 +421,9 @@ struct BarViewWrapper: UIViewRepresentable {
 
     func sizeThatFits(_ proposal: ProposedViewSize, uiView: UIView, context: Context) -> CGSize? {
         let width = proposal.width ?? UIView.layoutFittingExpandedSize.width
-        // Prefer the height React Native laid out for the wrapped bar view.
+        if let measuredHeight = measuredView?.bounds.height, measuredHeight > 0 {
+            return CGSize(width: width, height: measuredHeight)
+        }
         let height = barView.bounds.height
         if height > 0 {
             return CGSize(width: width, height: height)
@@ -709,101 +444,4 @@ struct BarViewWrapper: UIViewRepresentable {
             barView.frame = uiView.bounds
         }
     }
-}
-
-@available(iOS 16.0, *)
-struct ScrollEdgeBarWrapperView: View {
-    let scrollView: UIScrollView
-    let topBarContent: AnyView?
-    let bottomBarContent: AnyView?
-
-    var body: some View {
-        let base = DirectScrollViewWrapper(scrollView: scrollView)
-            .ignoresSafeArea(.all)
-
-        applyBars(to: base)
-    }
-
-    @ViewBuilder
-    private func applyBars<V: View>(to view: V) -> some View {
-        if #available(iOS 26.0, *) {
-            applyScrollEdgeBars(to: view)
-        } else {
-            applyInsetBars(to: view)
-        }
-    }
-
-    @available(iOS 26.0, *)
-    @ViewBuilder
-    private func applyScrollEdgeBars<V: View>(to view: V) -> some View {
-        switch (topBarContent, bottomBarContent) {
-        case (let top?, let bottom?):
-            view
-                .safeAreaBar(edge: .top) { top }
-                .safeAreaBar(edge: .bottom) { bottom }
-        case (let top?, nil):
-            view
-                .safeAreaBar(edge: .top) { top }
-        case (nil, let bottom?):
-            view
-                .safeAreaBar(edge: .bottom) { bottom }
-        case (nil, nil):
-            view
-        }
-    }
-
-    @ViewBuilder
-    private func applyInsetBars<V: View>(to view: V) -> some View {
-        switch (topBarContent, bottomBarContent) {
-        case (let top?, let bottom?):
-            view
-                .safeAreaInset(edge: .top) { top }
-                .safeAreaInset(edge: .bottom) { bottom }
-        case (let top?, nil):
-            view
-                .safeAreaInset(edge: .top) { top }
-        case (nil, let bottom?):
-            view
-                .safeAreaInset(edge: .bottom) { bottom }
-        case (nil, nil):
-            view
-        }
-    }
-}
-
-@available(iOS 16.0, *)
-struct DirectScrollViewWrapper: UIViewRepresentable {
-    let scrollView: UIScrollView
-
-    func makeUIView(context: Context) -> UIView {
-        let container = UIView()
-
-        scrollView.translatesAutoresizingMaskIntoConstraints = false
-        scrollView.contentInsetAdjustmentBehavior = .never
-        scrollView.showsHorizontalScrollIndicator = false
-        scrollView.alwaysBounceHorizontal = false
-        scrollView.isDirectionalLockEnabled = true
-
-        container.addSubview(scrollView)
-
-        NSLayoutConstraint.activate([
-            scrollView.topAnchor.constraint(equalTo: container.topAnchor),
-            scrollView.leadingAnchor.constraint(equalTo: container.leadingAnchor),
-            scrollView.trailingAnchor.constraint(equalTo: container.trailingAnchor),
-            scrollView.bottomAnchor.constraint(equalTo: container.bottomAnchor)
-        ])
-
-        DispatchQueue.main.async {
-            if let contentView = scrollView.subviews.first(where: { !($0 is UIImageView) }) {
-                contentView.translatesAutoresizingMaskIntoConstraints = false
-                NSLayoutConstraint.activate([
-                    contentView.widthAnchor.constraint(equalTo: scrollView.frameLayoutGuide.widthAnchor)
-                ])
-            }
-        }
-
-        return container
-    }
-
-    func updateUIView(_ uiView: UIView, context: Context) {}
 }

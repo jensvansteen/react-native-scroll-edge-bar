@@ -1,4 +1,4 @@
-import { DynamicColorIOS, StyleSheet } from 'react-native';
+import { DynamicColorIOS, PlatformColor, StyleSheet } from 'react-native';
 
 export const sharedStyles = StyleSheet.create({
   cardTitle: {
@@ -19,7 +19,7 @@ export const sharedStyles = StyleSheet.create({
   bottomLabel: {
     fontSize: 15,
     fontWeight: '600',
-    color: DynamicColorIOS({ light: '#111111', dark: '#f5f5f5' }),
+    color: PlatformColor('label'),
   },
   spacer: {
     flex: 1,
@@ -28,12 +28,12 @@ export const sharedStyles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 8,
     borderRadius: 10,
-    backgroundColor: DynamicColorIOS({ light: '#ececec', dark: '#2a2a2d' }),
+    backgroundColor: PlatformColor('secondarySystemFill'),
   },
   smallButtonText: {
     fontSize: 13,
     fontWeight: '600',
-    color: DynamicColorIOS({ light: '#111111', dark: '#f5f5f5' }),
+    color: PlatformColor('label'),
   },
   smallButtonPrimary: {
     paddingHorizontal: 14,
