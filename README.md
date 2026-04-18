@@ -121,6 +121,64 @@ These props are not needed in most cases. The native package measures bar conten
 
 Accept standard RN view props (`style`, `children`).
 
+## Examples
+
+### App Store Listing
+
+Segmented control as a top bar above a ranked app list. The bar blends with the navigation bar as content scrolls beneath it.
+
+<video src="https://github.com/user-attachments/assets/6622db2d-2eb8-4baa-82de-c96a36f248de" autoplay loop muted playsinline></video>
+
+### App Store (No Glass)
+
+Same screen with `prefersGlassEffect={false}`, showing the plain `safeAreaInset` bar without the blur effect.
+
+<video src="https://github.com/user-attachments/assets/4fd15cd2-ed58-48a9-ad4c-9762cdf055c3" autoplay loop muted playsinline></video>
+
+### Pull Requests
+
+Horizontally scrolling filter chips as a top bar with a large title navigation bar.
+
+<video src="https://github.com/user-attachments/assets/95c26a8b-7a3b-46b8-b026-c583d8fde743" autoplay loop muted playsinline></video>
+
+> **Note:** When a `safeAreaBar` is present alongside a large title navigation bar, SwiftUI applies the scroll edge blur effect to the navigation bar even when the content is at rest, causing it to appear blurry on first appearance. This is a known SwiftUI behavior ([FB21613303](https://developer.apple.com/forums/thread/812480)).
+
+### PR Detail
+
+Glass-effect review banner as a top bar and action buttons as a bottom bar.
+
+<video src="https://github.com/user-attachments/assets/e9673186-9362-4906-8f07-417b6e0d597c" autoplay loop muted playsinline></video>
+
+### Transition Showcase
+
+Large colored blocks demonstrating how the glass blur color transitions as you scroll past different background colors.
+
+<video src="https://github.com/user-attachments/assets/c0993fc1-e394-4885-8ac0-cc5440fa9745" autoplay loop muted playsinline></video>
+
+### Toolbar
+
+Bottom edge bar positioned above the system toolbar.
+
+<video src="https://github.com/user-attachments/assets/b0d6bff8-27f5-458f-8cfc-24137c68cfdc" autoplay loop muted playsinline></video>
+
+### Search Bar
+
+`UISearchController` in the navigation bar with a segmented control edge bar below it.
+
+<video src="https://github.com/user-attachments/assets/bac1b32f-8cb7-4177-aee1-6b78b2590d0d" autoplay loop muted playsinline></video>
+
+### Calendar
+
+Week day selector as a top bar with a stronger scroll-edge effect. The effect intensity is controlled via `topEdgeEffectStyle`:
+
+```tsx
+<ScrollEdgeBar topEdgeEffectStyle="hard">
+  ...
+</ScrollEdgeBar>
+```
+
+<video src="https://github.com/user-attachments/assets/aec6a4dd-56a3-4dd0-ae0b-acbc0455b17f" autoplay loop muted playsinline></video>
+
 ## Adaptive Bar Content
 
 The bar material/blur adapts to the content scrolling beneath it. However, React Native views rendered *inside* the bar do not automatically inherit the scroll-edge color transition — their colors stay as styled by React Native.
