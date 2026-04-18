@@ -19,6 +19,8 @@
     "ios",
     "*.podspec",
     "!ios/build",
+    "!ios/*.xcodeproj",
+    "!ios/*.xcworkspace",
     "!**/__tests__",
     "!**/__fixtures__",
     "!**/__mocks__",
@@ -161,9 +163,5 @@
       "release-it"
     ],
     "version": "0.57.0"
-  },
-  "dependencies": {
-    "react-native-safe-area-context": "^5.6.2",
-    "react-native-screens": "^4.22.0"
   }
 }

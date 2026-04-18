@@ -20,11 +20,7 @@ const conversationItems = Array.from({ length: 5 }, (_, index) => ({
 
 export default function PrDetailScreen() {
   return (
-    <ScrollEdgeBar
-      style={styles.container}
-      estimatedTopBarHeight={86}
-      estimatedBottomBarHeight={62}
-    >
+    <ScrollEdgeBar style={styles.container} estimatedTopBarHeight={86}>
       <ScrollEdgeBar.TopBar style={styles.topBar}>
         <GlassSurface
           style={styles.reviewBanner}

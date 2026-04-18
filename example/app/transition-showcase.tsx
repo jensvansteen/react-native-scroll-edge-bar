@@ -13,11 +13,7 @@ import { transitionColors } from '../src/data';
 
 export default function TransitionShowcaseScreen() {
   return (
-    <ScrollEdgeBar
-      style={styles.container}
-      estimatedTopBarHeight={48}
-      estimatedBottomBarHeight={88}
-    >
+    <ScrollEdgeBar style={styles.container} estimatedTopBarHeight={48}>
       <ScrollEdgeBar.TopBar style={styles.topBar}>
         <SegmentedControl
           values={['Colors', 'Gradients', 'Patterns']}

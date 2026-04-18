@@ -17,8 +17,8 @@ class ScrollEdgeBarBottomBarView: UIView {}
 @objc(ScrollEdgeBarContainerView)
 @objcMembers
 class ScrollEdgeBarContainerView: UIView {
-    var estimatedTopBarHeight: CGFloat = 60
-    var estimatedBottomBarHeight: CGFloat = 60
+    var estimatedTopBarHeight: CGFloat = 0
+    var estimatedBottomBarHeight: CGFloat = 0
     var prefersGlassEffect: Bool = true
     var topEdgeEffectStyle: String = "automatic" {
         didSet { edgeEffectStylesDidChange() }
@@ -329,7 +329,12 @@ final class RNScrollEdgeBarController: ScrollEdgeBarController {
     override func makeBarContent(for uiView: UIView?) -> AnyView? {
         guard let uiView else { return nil }
         let estimated = uiView === topSlotHostView ? estimatedTopBarHeight : estimatedBottomBarHeight
-        return AnyView(BarViewWrapper(barView: uiView, estimatedHeight: estimated))
+        let measuredView = uiView === topSlotHostView ? topBarOriginalParent : bottomBarOriginalParent
+        return AnyView(BarViewWrapper(
+            barView: uiView,
+            measuredView: measuredView,
+            estimatedHeight: estimated
+        ))
     }
 
     // MARK: - Fabric teardown
@@ -387,6 +392,7 @@ final class RNScrollEdgeBarController: ScrollEdgeBarController {
 @available(iOS 16.0, *)
 struct BarViewWrapper: UIViewRepresentable {
     let barView: UIView
+    weak var measuredView: UIView?
     let estimatedHeight: CGFloat
 
     func makeUIView(context: Context) -> UIView {
@@ -415,6 +421,9 @@ struct BarViewWrapper: UIViewRepresentable {
 
     func sizeThatFits(_ proposal: ProposedViewSize, uiView: UIView, context: Context) -> CGSize? {
         let width = proposal.width ?? UIView.layoutFittingExpandedSize.width
+        if let measuredHeight = measuredView?.bounds.height, measuredHeight > 0 {
+            return CGSize(width: width, height: measuredHeight)
+        }
         let height = barView.bounds.height
         if height > 0 {
             return CGSize(width: width, height: height)

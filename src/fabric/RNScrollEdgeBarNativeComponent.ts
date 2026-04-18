@@ -8,8 +8,8 @@ import {
 type ScrollEdgeEffectStyle = 'automatic' | 'soft' | 'hard';
 
 export interface NativeProps extends ViewProps {
-  estimatedTopBarHeight?: CT.WithDefault<CT.Double, 60>;
-  estimatedBottomBarHeight?: CT.WithDefault<CT.Double, 60>;
+  estimatedTopBarHeight?: CT.WithDefault<CT.Double, 0>;
+  estimatedBottomBarHeight?: CT.WithDefault<CT.Double, 0>;
   topEdgeEffectStyle?: CT.WithDefault<ScrollEdgeEffectStyle, 'automatic'>;
   bottomEdgeEffectStyle?: CT.WithDefault<ScrollEdgeEffectStyle, 'automatic'>;
   prefersGlassEffect?: CT.WithDefault<boolean, true>;

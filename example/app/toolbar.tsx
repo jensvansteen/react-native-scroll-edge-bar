@@ -36,7 +36,6 @@ export default function ToolbarScreen() {
       <ScrollEdgeBar
         style={styles.container}
         estimatedTopBarHeight={headerHeight}
-        estimatedBottomBarHeight={72}
       >
         <ScrollView contentInsetAdjustmentBehavior="automatic">
           {Array.from({ length: 24 }).map((_, index) => (

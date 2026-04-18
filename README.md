@@ -2,14 +2,14 @@
 
 `react-native-scroll-edge-bar` is a Fabric-based React Native view for attaching custom top and bottom bars to a scroll view on iOS.
 
-It currently targets the iOS 26 `safeAreaBar` APIs and is implemented only on iOS.
+It is implemented only on iOS. On iOS 26 and newer it uses the native scroll-edge `safeAreaBar` glass behavior through the native `ScrollEdgeBar` UIKit package; on earlier supported iOS versions it falls back to inset-style bars.
 
 ## Current Scope
 
 - iOS implementation: present
 - Android implementation: not implemented
 - Fabric / New Architecture: required
-- Native dependency: none beyond standard React Native Fabric/codegen on iOS
+- Native dependency: `ScrollEdgeBar` CocoaPod / UIKit package (`~> 1.2`)
 
 ## Public API
 
@@ -28,13 +28,15 @@ Available components:
 ### `ScrollEdgeBar` props
 
 - `estimatedTopBarHeight?: number`
-  - Fallback height used before the top bar has a measured layout.
+  - Optional fallback height used before the top bar has a measured layout. Defaults to `0`. Most apps should not need this.
 - `estimatedBottomBarHeight?: number`
-  - Fallback height used before the bottom bar has a measured layout.
-- `topBarOffset?: number`
-  - Extra offset to push the top bar below an external header.
-- `bottomBarOffset?: number`
-  - Extra offset to lift the bottom bar above an external tab bar.
+  - Optional fallback height used before the bottom bar has a measured layout. Defaults to `0`. Most apps should not need this.
+- `topEdgeEffectStyle?: 'automatic' | 'soft' | 'hard'`
+  - iOS 26 scroll-edge effect style for the top edge. Defaults to `automatic`.
+- `bottomEdgeEffectStyle?: 'automatic' | 'soft' | 'hard'`
+  - iOS 26 scroll-edge effect style for the bottom edge. Defaults to `automatic`.
+- `prefersGlassEffect?: boolean`
+  - Whether to use iOS 26 glass scroll-edge bars when available. Defaults to `true`.
 - Standard RN view props such as `style`
 
 ### `ScrollEdgeBar.TopBar` props
@@ -59,11 +61,7 @@ import { ScrollEdgeBar } from 'react-native-scroll-edge-bar';
 
 export function Example() {
   return (
-    <ScrollEdgeBar
-      style={{ flex: 1 }}
-      estimatedTopBarHeight={48}
-      estimatedBottomBarHeight={56}
-    >
+    <ScrollEdgeBar style={{ flex: 1 }}>
       <ScrollEdgeBar.TopBar
         style={{ paddingHorizontal: 16, paddingVertical: 8 }}
       >
@@ -88,13 +86,7 @@ export function Example() {
 }
 ```
 
-If your navigation header or tab bar is external to the scroll-edge-bar container, you can provide explicit offsets:
-
-```tsx
-<ScrollEdgeBar topBarOffset={headerOffset} bottomBarOffset={tabBarOffset}>
-  ...
-</ScrollEdgeBar>
-```
+Estimated heights are optional. They are only early layout hints to reduce first-frame flicker before the real bar size is measured. If omitted, the native UIKit package measures the rendered bar content.
 
 ## Installation
 
@@ -102,7 +94,7 @@ If your navigation header or tab bar is external to the scroll-edge-bar containe
 npm install react-native-scroll-edge-bar
 ```
 
-Then install iOS pods in your app:
+The package requires iOS 16 or newer and depends on the native `ScrollEdgeBar` CocoaPod. Then install iOS pods in your app:
 
 ```sh
 cd ios
@@ -113,9 +105,10 @@ pod install
 
 The example app in `example/` currently demonstrates:
 
-- a native stack header via React Navigation native stack
-- a `ScrollEdgeBar.TopBar` with a segmented control
-- a `ScrollEdgeBar.BottomBar` with a label and switch
+- an overview list
+- top bars with segmented controls and filter chips
+- bottom safe-area bars and toolbar-style examples
+- calendar and transition showcase screens
 
 ## Adaptive Bar Content
 
@@ -164,7 +157,7 @@ import { ScrollEdgeBar } from 'react-native-scroll-edge-bar';
 
 export function RNBottomBarExample() {
   return (
-    <ScrollEdgeBar style={{ flex: 1 }} estimatedBottomBarHeight={64}>
+    <ScrollEdgeBar style={{ flex: 1 }}>
       <ScrollView>{/* content */}</ScrollView>
 
       <ScrollEdgeBar.BottomBar style={styles.bottomBar}>
@@ -226,7 +219,7 @@ import { ScrollEdgeBar } from 'react-native-scroll-edge-bar';
 
 export function SwiftUIBottomBarExample() {
   return (
-    <ScrollEdgeBar style={{ flex: 1 }} estimatedBottomBarHeight={64}>
+    <ScrollEdgeBar style={{ flex: 1 }}>
       <ScrollView>{/* content */}</ScrollView>
 
       <ScrollEdgeBar.BottomBar style={{ width: '100%' }}>
@@ -265,8 +258,8 @@ For full UIKit-level adaptive behavior in standalone bars, prefer native/adaptiv
 ## Current Limitations
 
 - iOS-only in practice
-- relies on view discovery and reparenting in Fabric, which is more fragile than a pure UIKit setup
-- the implementation is currently tuned around iOS 26 APIs
+- relies on React Native Fabric/new architecture
+- the glass scroll-edge effect is an iOS 26 feature; earlier iOS versions use non-glass inset bars
 - arbitrary RN-rendered bar children do not always inherit the same adaptive scroll-edge foreground/color transitions as native UIKit/SwiftUI controls
 
 ## Repo Notes
@@ -276,7 +269,7 @@ Relevant files:
 - API surface: `src/index.tsx`
 - Fabric specs: `src/fabric/*.ts`
 - iOS implementation: `ios/HybridScrollEdgeBar.swift`
-- example app: `example/src/App.tsx`
+- example app: `example/app`
 
 ## Contributing
 
