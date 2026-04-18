@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "description": "iOS scroll edge bars for React Native — floating top and bottom bars that adapt their background to the scrolled content beneath them",
   "main": "./lib/module/index.js",
+  "react-native": "./src/index.tsx",
   "types": "./lib/typescript/src/index.d.ts",
   "exports": {
     ".": {
@@ -17,6 +18,7 @@
     "lib",
     "common",
     "ios",
+    "CHANGELOG.md",
     "*.podspec",
     "!ios/build",
     "!ios/*.xcodeproj",
@@ -32,14 +34,11 @@
     "prepare": "bob build",
     "typecheck": "tsc",
     "lint": "eslint \"**/*.{js,ts,tsx}\"",
-    "test": "jest",
+    "test": "jest --watchman=false",
     "release": "release-it --only-version"
   },
   "keywords": [
     "react-native",
-    "ios"
-  ],
-  "os": [
     "ios"
   ],
   "repository": {

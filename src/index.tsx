@@ -31,7 +31,31 @@ export type ScrollEdgeBarBottomBarProps = RNScrollEdgeBarBottomBarProps & {
   style?: StyleProp<ViewStyle>;
 };
 
-const ScrollEdgeBarComponent = React.forwardRef<
+type ScrollEdgeBarComponentType = React.ForwardRefExoticComponent<
+  ScrollEdgeBarProps &
+    React.RefAttributes<React.ElementRef<typeof RNScrollEdgeBarNativeComponent>>
+>;
+
+type ScrollEdgeBarTopBarComponentType = React.ForwardRefExoticComponent<
+  ScrollEdgeBarTopBarProps &
+    React.RefAttributes<
+      React.ElementRef<typeof RNScrollEdgeBarTopBarNativeComponent>
+    >
+>;
+
+type ScrollEdgeBarBottomBarComponentType = React.ForwardRefExoticComponent<
+  ScrollEdgeBarBottomBarProps &
+    React.RefAttributes<
+      React.ElementRef<typeof RNScrollEdgeBarBottomBarNativeComponent>
+    >
+>;
+
+export type ScrollEdgeBarCompoundComponent = ScrollEdgeBarComponentType & {
+  TopBar: ScrollEdgeBarTopBarComponentType;
+  BottomBar: ScrollEdgeBarBottomBarComponentType;
+};
+
+const ScrollEdgeBarComponent: ScrollEdgeBarComponentType = React.forwardRef<
   React.ElementRef<typeof RNScrollEdgeBarNativeComponent>,
   ScrollEdgeBarProps
 >((props, ref) =>
@@ -41,7 +65,7 @@ const ScrollEdgeBarComponent = React.forwardRef<
   })
 );
 
-const TopBar = React.forwardRef<
+const TopBar: ScrollEdgeBarTopBarComponentType = React.forwardRef<
   React.ElementRef<typeof RNScrollEdgeBarTopBarNativeComponent>,
   ScrollEdgeBarTopBarProps
 >((props, ref) =>
@@ -54,7 +78,7 @@ const TopBar = React.forwardRef<
   )
 );
 
-const BottomBar = React.forwardRef<
+const BottomBar: ScrollEdgeBarBottomBarComponentType = React.forwardRef<
   React.ElementRef<typeof RNScrollEdgeBarBottomBarNativeComponent>,
   ScrollEdgeBarBottomBarProps
 >((props, ref) =>
@@ -71,10 +95,13 @@ ScrollEdgeBarComponent.displayName = 'ScrollEdgeBar';
 TopBar.displayName = 'ScrollEdgeBar.TopBar';
 BottomBar.displayName = 'ScrollEdgeBar.BottomBar';
 
-export const ScrollEdgeBar = Object.assign(ScrollEdgeBarComponent, {
-  TopBar,
-  BottomBar,
-});
+export const ScrollEdgeBar: ScrollEdgeBarCompoundComponent = Object.assign(
+  ScrollEdgeBarComponent,
+  {
+    TopBar,
+    BottomBar,
+  }
+);
 
 export type {
   RNScrollEdgeBarProps,

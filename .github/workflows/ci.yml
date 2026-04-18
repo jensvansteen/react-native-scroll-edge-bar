@@ -108,8 +108,7 @@ jobs:
         if: env.turbo_cache_hit != 1
         run: |
           cd example
-          bundle install
-          bundle exec pod install --project-directory=ios
+          pod install --project-directory=ios
 
       - name: Build example for iOS
         run: |

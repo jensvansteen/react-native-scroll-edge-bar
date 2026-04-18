@@ -13,7 +13,8 @@ This example app is the current manual testbed for `react-native-scroll-edge-bar
 ## Notes
 
 - The example targets iOS first.
-- The library implementation currently depends on iOS 26 APIs.
+- The library requires iOS 16 or newer. iOS 26 adds the native glass scroll-edge effect; earlier supported versions use inset-style bars.
+- Expo prebuild reads the iOS deployment target from `app.json` through `expo-build-properties`.
 - If you update CocoaPods dependencies, rerun `pod install` inside `example/ios/`.
 
 ## Run
@@ -22,8 +23,7 @@ From the repo root:
 
 ```sh
 yarn install
-cd example/ios
-pod install
-cd ..
+cd example
+npx expo prebuild --platform ios
 yarn ios
 ```
