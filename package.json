@@ -1,6 +1,6 @@
 {
   "name": "react-native-scroll-edge-bar",
-  "version": "1.0.1",
+  "version": "1.0.0",
   "description": "iOS scroll edge bars for React Native — floating top and bottom bars that adapt their background to the scrolled content beneath them",
   "main": "./lib/module/index.js",
   "react-native": "./src/index.tsx",
