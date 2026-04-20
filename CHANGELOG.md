@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.0.0
+
+### Added
+- Updated documentation
+
 ## 0.1.0
 
 ### Added
